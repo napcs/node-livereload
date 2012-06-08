@@ -7,10 +7,17 @@ An implementation of the LiveReload server in Node.js. It's an alternative to th
 
 First, install the LiveReload browser plugins by visiting [http://help.livereload.com/kb/general-use/browser-extensions](http://help.livereload.com/kb/general-use/browser-extensions).
 
-Then install the livereload module with `npm`:
+To use livereload from the command line:
+
+    $ npm install -g livereload
+    $ livereload [path]
+
+    
+
+Or to use the api within a project:
 
     $ npm install livereload
-    
+
 Then, simply create a server and fire it up.
 
     livereload = require('livereload');
