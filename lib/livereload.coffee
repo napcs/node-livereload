@@ -1,6 +1,8 @@
 fs   = require 'fs'
 path = require 'path'
 ws   = require 'websocket.io'
+http  = require 'http'
+url = require 'url'
 
 version = '1.6'
 defaultPort = 35729
@@ -33,7 +35,11 @@ class Server
   listen: ->
     @debug "LiveReload is waiting for browser to connect."
     
-    @server = ws.listen(@config.port)
+    if @config.server
+      @config.server.listen @config.port
+      @server = ws.attach(@config.server)
+    else
+      @server = ws.listen(@config.port)
 
     @server.on 'connection', @onConnection.bind @
     @server.on 'close',      @onClose.bind @
@@ -97,7 +103,14 @@ class Server
     if @config.debug
       console.log "#{str}\n"
 
-exports.createServer = (args...) ->
-  server = new Server args...
+exports.createServer = (config) ->
+  app = http.createServer ( req, res )->
+    if url.parse(req.url).pathname is '/livereload.js'
+      res.writeHead(200, {'Content-Type': 'text/javascript'})
+      res.end fs.readFileSync __dirname + '/../ext/livereload.js'
+
+  config.server ?= app
+
+  server = new Server config
   server.listen()
   server

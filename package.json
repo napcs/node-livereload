@@ -19,5 +19,14 @@
     "opts": ">= 1.2.0",
     "websocket.io": ">= 0.1.0"
   }
+, "devDependencies": {
+    "request": ">= 2.9.203",
+    "should": ">= 0.6.3",
+    "ws": ">= 0.4.20",
+    "mocha": ">= 1.0.3"
+  }
 , "engines" : { "node" : ">=0.4.0" }
+, "scripts": {
+    "test": "mocha"
+  }
 }
