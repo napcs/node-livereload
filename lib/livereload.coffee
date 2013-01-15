@@ -12,7 +12,16 @@ defaultExts = [
   'php', 'php5', 'py', 'rb', 'erb'
 ]
 
+defaultAlias =
+  'styl': 'css'
+
 defaultExclusions = ['.git/', '.svn/', '.hg/']
+
+merge = (obj1, obj2) ->
+  _obj = {}
+  _obj[key] = value for key, value of obj1
+  _obj[key] = value for key, value of obj2
+  _obj
 
 class Server
   constructor: (@config) ->
@@ -23,9 +32,11 @@ class Server
 
     @config.exts       ?= []
     @config.exclusions ?= []
+    @config.alias      ?= {}
 
     @config.exts       = @config.exts.concat defaultExts
     @config.exclusions = @config.exclusions.concat defaultExclusions
+    @config.alias      = merge( defaultAlias, @config.alias )
 
     @config.applyJSLive  ?= false
     @config.applyCSSLive ?= true
@@ -88,10 +99,16 @@ class Server
         if curr.mtime > prev.mtime
           @refresh filename
 
-  refresh: (path) ->
-    @debug "Refresh: #{path}"
+  refresh: (filepath) ->
+    @debug "Refresh: #{filepath}"
+    ext       = path.extname(filepath).substr(1)
+    aliasExt  = @config.alias[ext]
+    if aliasExt?
+      @debug "and aliased to #{aliasExt}"
+      filepath = filepath.replace("." + ext, ".#{aliasExt}")
+      
     data = JSON.stringify ['refresh',
-      path: path,
+      path: filepath,
       apply_js_live: @config.applyJSLive,
       apply_css_live: @config.applyCSSLive
     ]
@@ -114,3 +131,4 @@ exports.createServer = (config) ->
   server = new Server config
   server.listen()
   server
+

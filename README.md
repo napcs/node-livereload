@@ -46,6 +46,7 @@ The `createServer()` method supports a few basic options, passed as a JavaScript
 * `applyJSLive` tells LiveReload to reload JavaScript files in the background instead of reloading the page. The default for this is `false`.
 * `applyCSSLive` tells LiveReload to reload CSS files in the background instead of refreshing the page. The default for this is `true`.
 * `exclusions` lets you specify files to ignore. By default, this includes `.git/`, `.svn/`, and `.hg/`
+* `alias` lets you specify file extensions to be aliased. By default, this maps `.styl` to `.css`, by which, changing `.styl` file never fires full page reload.
 
 # Limitations
 
@@ -56,3 +57,4 @@ Right now this is extremely simple. It relies on polling so there's a delay in r
 Copyright (c) 2010-2012 Joshua Peek and Brian P. Hogan.
 
 Released under the MIT license. See `LICENSE` for details.
+
