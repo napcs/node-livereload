@@ -12,7 +12,7 @@ defaultExts = [
   'php', 'php5', 'py', 'rb', 'erb'
 ]
 
-defaultExclusions = ['.git/', '.svn/', '.hg/']
+defaultExclusions = [/\.git\//, /\.svn\//, /\.hg\//]
 
 class Server
   constructor: (@config) ->
