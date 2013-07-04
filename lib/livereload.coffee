@@ -103,7 +103,7 @@ class Server
     if @config.debug
       console.log "#{str}\n"
 
-exports.createServer = (config) ->
+exports.createServer = (config = {}) ->
   app = http.createServer ( req, res )->
     if url.parse(req.url).pathname is '/livereload.js'
       res.writeHead(200, {'Content-Type': 'text/javascript'})
