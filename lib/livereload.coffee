@@ -84,9 +84,8 @@ class Server
   watch: (dirname) ->
     @walkTree dirname, (err, filename) =>
       throw err if err
-      fs.watchFile filename, (curr, prev) =>
-        if curr.mtime > prev.mtime
-          @refresh filename
+      fs.watch filename, (event, fname) =>
+        @refresh filename
 
   refresh: (path) ->
     @debug "Refresh: #{path}"
@@ -97,7 +96,10 @@ class Server
     ]
 
     for socket in @sockets
-      socket.send data
+      try
+        socket.send data
+      catch  # ignore socket errors and keep going...
+        null
 
   debug: (str) ->
     if @config.debug
