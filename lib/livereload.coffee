@@ -8,8 +8,8 @@ version = '1.6'
 defaultPort = 35729
 
 defaultExts = [
-  'html', 'css', 'js', 'png', 'gif', 'jpg',
-  'php', 'php5', 'py', 'rb', 'erb'
+  'html', 'css', 'js', 'png', 'gif', 'jpg'
+  'php', 'php5', 'py', 'rb', 'erb', 'coffee'
 ]
 
 defaultExclusions = [/\.git\//, /\.svn\//, /\.hg\//]
@@ -84,7 +84,7 @@ class Server
   watch: (dirname) ->
     @walkTree dirname, (err, filename) =>
       throw err if err
-      fs.watchFile filename, (curr, prev) =>
+      fs.watchFile filename, interval: 200, (curr, prev) =>
         if curr.mtime > prev.mtime
           @refresh filename
 
