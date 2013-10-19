@@ -84,7 +84,7 @@ class Server
   watch: (dirname) ->
     @walkTree dirname, (err, filename) =>
       throw err if err
-      fs.watchFile filename, {interval:1000}, (curr, prev) =>
+      fs.watchFile filename, {interval: 200}, (curr, prev) =>
         if curr.mtime > prev.mtime
           @refresh filename
 
