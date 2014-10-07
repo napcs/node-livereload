@@ -37,10 +37,10 @@ class Server
     @config.interval ?= 1000
 
     @sockets = []
-    
+
   listen: ->
     @debug "LiveReload is waiting for browser to connect."
-    
+
     if @config.server
       @config.server.listen @config.port
       @server = ws.attach(@config.server)
@@ -61,7 +61,7 @@ class Server
       @debug "Error in client socket: #{err}"
 
     @sockets.push socket
-    
+
   onClose: (socket) ->
     @debug "Browser disconnected."
 
@@ -92,9 +92,12 @@ class Server
   watch: (dirname) ->
     @walkTree dirname, (err, filename) =>
       throw err if err
-      fs.watchFile filename, {interval: @config.interval}, (curr, prev) =>
-        if curr.mtime > prev.mtime
+      watcher = null
+      handler = () =>
+        if watcher
+          watcher.close()
           @refresh filename
+        watcher = fs.watch filename, {persistent: false}, handler
 
   refresh: (path) ->
     @debug "Refresh: #{path}"
