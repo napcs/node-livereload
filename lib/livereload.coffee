@@ -96,8 +96,18 @@ class Server
     dirname.forEach (dir) =>
       @walkTree dir, (err, filename) =>
         throw err if err
-        fs.watchFile filename, {interval: @config.interval}, (curr, prev) =>
-          @refresh filename if curr.mtime > prev.mtime
+
+        if @config.fast
+          watcher = null
+          handler = () =>
+            if watcher
+              watcher.close()
+              @refresh filename
+            watcher = fs.watch filename, {persistent: false}, handler
+          handler()
+        else
+          fs.watchFile filename, {interval: @config.interval}, (curr, prev) =>
+            @refresh filename if curr.mtime > prev.mtime
 
   refresh: (path) ->
     @debug "Refresh: #{path}"

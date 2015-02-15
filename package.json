@@ -23,7 +23,9 @@
     "should": ">= 0.6.3",
     "ws": ">= 0.4.20",
     "mocha": ">= 1.0.3",
-    "coffee-script": ">= 1.8.0"
+    "coffee-script": ">= 1.8.0",
+    "tmp": "0.0.24",
+    "ws": ">= 0.4.20"
   }
 , "engines" : { "node" : ">=0.4.0" }
 , "scripts": {

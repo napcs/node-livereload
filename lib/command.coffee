@@ -19,12 +19,19 @@ runner = ->
       value: true
       required: false
     }
+    {
+      short: "f"
+      long:  "fast"
+      description: "Use faster watching (doesn't work on networked filesystems)"
+      value: false
+    }
   ].reverse(), true
 
   port = opts.get('port') || 35729
   interval = opts.get('interval') || 1000
+  fast = !!opts.get('fast')
 
-  server = livereload.createServer({port: port, interval: interval, debug: true})
+  server = livereload.createServer({port: port, interval: interval, fast: fast, debug: true})
 
   path = resolve(process.argv[2] || '.')
 

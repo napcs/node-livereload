@@ -1,13 +1,51 @@
 livereload = require '../lib/livereload'
+proxyquire = require 'proxyquire'
 should = require 'should'
 request = require 'request'
+tmp = require 'tmp'
 http = require 'http'
 url = require 'url'
 fs = require 'fs'
 path = require 'path'
 WebSocket = require 'ws'
 
+# creates a dummy file that we can bump for testing
+dummy = (callback) ->
+  tmp.file {prefix: 'livereload-', postfix: '.js'}, (err, filepath, fd) ->
+    return callback(err) if err
+
+    bump = (callback) ->
+      fs.writeFile filepath, Math.random() + '', callback
+
+    # bootstrap the file
+    bump () ->
+      callback undefined,
+        dir: path.dirname(filepath)
+        bump: bump
+
 describe 'livereload http file serving', ->
+
+  it 'should parse command line options', (done) ->
+    called = false
+    command = proxyquire '../lib/command', './livereload':
+      createServer: (opts) ->
+        called = true
+        opts.port.should.equal '3000'
+        opts.interval.should.equal '1000'
+        opts.fast.should.be.true
+
+        return watch: () ->
+
+    oldLog = console.log
+    oldArgs = process.argv
+    console.log = () ->
+    process.argv = ['node', 'yoinks', '-p', '3000', '-i', '1000', '-f']
+    command.run()
+    process.argv = oldArgs
+    console.log = oldLog
+
+    called.should.be.true
+    done()
 
   it 'should serve up livereload.js', (done) ->
     server = livereload.createServer({port: 35729})
@@ -74,6 +112,12 @@ describe 'livereload http file serving', ->
 
       done()
 
+  it 'should allow fast watching using fs.watch', (done) ->
+    server = livereload.createServer
+      port: 35729
+      fast: true
+    done()
+
 describe 'livereload file watching', ->
 
   it 'should correctly watch common files', ->
@@ -84,3 +128,24 @@ describe 'livereload file watching', ->
 
   it 'should not exclude a dir named git', ->
     # cf. issue #20
+
+  it 'should correctly use fast watching', (done) ->
+    server = livereload.createServer
+      port: 35728
+      fast: true
+
+    # monkey patch debug to listen
+    startTime = 0
+    server.debug = (str) ->
+      # console.log 'Reload took', (Date.now() - startTime)
+      done()
+
+    dummy (err, f) ->
+      server.watch f.dir
+      setTimeout (() ->
+          startTime = Date.now()
+          f.bump () ->
+        ), 500
+
+
+
