@@ -99,6 +99,14 @@ class Server
         fs.watchFile filename, {interval: @config.interval}, (curr, prev) =>
           @refresh filename if curr.mtime > prev.mtime
 
+  unwatch: (dirname) ->
+    dirname = [dirname] if typeof dirname is "string"
+
+    dirname.forEach (dir) =>
+      @walkTree dir, (err, filename) =>
+        throw err if err
+        fs.unwatchFile filename
+
   refresh: (path) ->
     @debug "Refresh: #{path}"
     data = JSON.stringify ['refresh',
