@@ -76,8 +76,78 @@ describe 'livereload http file serving', ->
 
 describe 'livereload file watching', ->
 
-  it 'should correctly watch common files', ->
+  # it 'should correctly watch common files', (done) ->
+  #   # TODO check it watches default exts
+  #   server = livereload.createServer({port: 35729})
+  #   server.watch('./test/output');
+  #   file = 'test/output/index.';
+  #   exts = server.config.exts
+  #   clone = exts.slice 0
+  #   ws = new WebSocket('ws://localhost:35729/livereload')
+
+  #   ws.on 'message', (data, flags) ->
+  #     if data == '!!ver:1.6'
+  #       i = 0
+  #       while i < exts.length
+  #         fs.writeFile file + exts[i]
+  #         i++
+  #     else
+  #       res = JSON.parse(data)
+  #       ext = res[1].path.match(/(\.)([0-9a-z]+$)/i)[2];
+  #       pos = clone.indexOf(ext)
+        
+  #       pos.should.not.equal -1
+  #       res[0].should.equal 'refresh'
+        
+  #       clone.splice(pos, 1)
+  #       fs.unlink file + ext
+
+  #       if clone.length == 0
+  #         server.config.server.close()
+  #         done()
+  it 'should correctly watch common files', (done) ->
     # TODO check it watches default exts
+    server = livereload.createServer({port: 35729})
+    server.watch('./test/output');
+    file = 'test/output/index.';
+    exts = server.config.exts
+    clone = exts.slice 0
+    ws = new WebSocket('ws://localhost:35729/livereload')
+
+    recursive = () ->
+      ws.removeListener('message', first)
+      one = clone.shift
+      console.log one
+      ws.on('message', recursive)
+      fs.writeFile file + one, '', recursive
+
+    second = (a, b, c, d) ->
+      console.log a, b, c, d
+
+    first = (data, flags) ->
+      ws.removeListener('message', first)
+      one = clone.shift
+      ws.on('message', second)
+      # i = 0
+      # while i < exts.length
+      #   fs.writeFile file + exts[i], '', second(i, exts[i])
+      #   i++
+
+    ws.on 'message', first
+      # else
+      #   res = JSON.parse(data)
+      #   ext = res[1].path.match(/(\.)([0-9a-z]+$)/i)[2];
+      #   pos = clone.indexOf(ext)
+        
+      #   pos.should.not.equal -1
+      #   res[0].should.equal 'refresh'
+        
+      #   clone.splice(pos, 1)
+      #   fs.unlink file + ext
+
+      #   if clone.length == 0
+      #     server.config.server.close()
+      #     done()
 
   it 'should correctly ignore common exclusions', ->
     # TODO check it ignores common exclusions
