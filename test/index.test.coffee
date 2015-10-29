@@ -78,109 +78,71 @@ describe 'livereload file watching', ->
 
   it 'should correctly watch common files', (done) ->
     # TODO check it watches default exts
+    dir = './test/output/'
+    file = dir + 'index.'
     server = livereload.createServer({port: 35729})
-    exts = server.config.exts
-    file = 'test/output/index.';
+    defaultExts = server.config.exts
+    cloneExts = defaultExts.slice 0
+    
+    # create files to watch
     i = 0
-    while i < exts.length
-      fs.writeFileSync file + exts[i], ''
+    while i < defaultExts.length
+      fs.writeFileSync file + defaultExts[i], ''
       i++
-    server.watch('test/output');
-    clone = exts.slice 0
+
+    server.watch(dir);
     ws = new WebSocket('ws://localhost:35729/livereload')
 
+    # change files after 1 second
+    # this dealy is due to the fact that the refresh function does not run
+    # if the time difference between the changes is less than 1 second
+    setTimeout (->
+      i = 0
+      while i < defaultExts.length
+        fs.writeFile file + defaultExts[i], ''
+        i++
+    ), 1000
 
     ws.on 'message', (data, flags) ->
-      console.log data
       if data == '!!ver:1.6'
-        i = 0
-        while i < exts.length
-          fs.writeFile file + exts[i], 'a'
-          i++
+        # first call when we start the websocket, do nothing
       else
         res = JSON.parse(data)
         ext = res[1].path.match(/(\.)([0-9a-z]+$)/i)[2];
-        pos = clone.indexOf(ext)
+        pos = cloneExts.indexOf(ext)
         
         pos.should.not.equal -1
         res[0].should.equal 'refresh'
         
-        clone.splice(pos, 1)
+        cloneExts.splice(pos, 1)
         fs.unlink file + ext
 
-        if clone.length == 0
+        if cloneExts.length == 0
           server.config.server.close()
+          ws.close()
+
           done()
-  
-  # it 'should correctly watch common files', (done) ->
-  #   # TODO check it watches default exts
-  #   server = livereload.createServer({port: 35729})
-  #   server.watch('./test/output');
-  #   file = 'test/output/index.';
-  #   exts = server.config.exts
-  #   extsLen = exts.length
-  #   extsCounter = 0;
-  #   clone = exts.slice 0
-  #   ws = new WebSocket('ws://localhost:35729/livereload')
 
-    # recursive = () ->
-    #   ws.removeListener('message', first)
-    #   one = clone.shift
-    #   console.log one
-    #   ws.on('message', recursive)
-    #   fs.writeFile file + one, '', recursive
-    # cb = () ->
-
-
-    # second = (ext) ->
-    #   ws.on 'message', (data, flags) ->
-    #     console.log ext
-    #     res = JSON.parse(data)
-    #     modExt = res[1].path.match(/(\.)([0-9a-z]+$)/i)[2];
-    #     # pos = clone.indexOf(modExt)
-    #     # pos.should.not.equal -1
-    #     modExt.should.equal ext
-    #     res[0].should.equal 'refresh'
-    #     server.config.server.close()
-    #     ws.close()
-    #     fs.unlink file + ext
-    #     done()
-    #   fs.writeFile file + ext, ''
-
-    # first = (data, flags) ->
-    #   console.log data
-    #   # ws.removeListener('message', first)
-    #   ext = clone.shift()
-    #   second(ext)
-
-      # server.config.server.close()
-      # done()
-    #   one = clone.shift
-    #   ws.on('message', second)
-      # i = 0
-      # while i < exts.length
-      #   fs.writeFile file + exts[i], '', second(i, exts[i])
-      #   i++
-
-    # ws.on 'message', (data, flags) ->
-      # console.log data, flags
-      # else
-      #   res = JSON.parse(data)
-      #   ext = res[1].path.match(/(\.)([0-9a-z]+$)/i)[2];
-      #   pos = clone.indexOf(ext)
-        
-      #   pos.should.not.equal -1
-      #   res[0].should.equal 'refresh'
-        
-      #   clone.splice(pos, 1)
-      #   fs.unlink file + ext
-
-      #   if clone.length == 0
-      #     server.config.server.close()
-      #     done()
-
-  # it 'should correctly ignore common exclusions', ->
+  it 'should correctly ignore common exclusions', (done) ->
     # TODO check it ignores common exclusions
+    dir = './test/output/'
+    file = dir + 'index.'
+    server = livereload.createServer({port: 35729})
+    defaultExts = server.config.exts
+    defaultExclusions = server.config.exclusions
+    cloneExts = defaultExts.slice 0
+    cloneExclusions = defaultExclusions.slice 0
 
-  # it 'should not exclude a dir named git', ->
+    console.log defaultExclusions
+
+    server.watch(dir);
+    ws = new WebSocket('ws://localhost:35729/livereload')
+
+    server.config.server.close()
+    ws.close()
+
+    done()
+
+  it 'should not exclude a dir named git', (done) ->
     # cf. issue #20
+    done()
