@@ -84,7 +84,9 @@ describe 'livereload file watching', ->
     defaultExts = server.config.exts
     cloneExts = defaultExts.slice 0
     
-    # create files to watch
+    # create folder and files to watch
+    if !fs.existsSync(dir)
+      fs.mkdirSync(dir)
     i = 0
     while i < defaultExts.length
       fs.writeFileSync file + defaultExts[i], ''
@@ -118,6 +120,9 @@ describe 'livereload file watching', ->
         fs.unlink file + ext
 
         if cloneExts.length == 0
+          # remove created test folder
+          fs.rmdirSync(dir)
+          
           server.config.server.close()
           ws.close()
 
