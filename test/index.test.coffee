@@ -81,27 +81,27 @@ describe 'livereload file watching', ->
     dir = './test/output/'
     file = dir + 'index.'
     server = livereload.createServer({port: 35729})
-    defaultExts = server.config.exts
-    cloneExts = defaultExts.slice 0
+    testExts = server.config.exts
+    cloneExts = testExts.slice 0
     
     # create folder and files to watch
     if !fs.existsSync(dir)
       fs.mkdirSync(dir)
     i = 0
-    while i < defaultExts.length
-      fs.writeFileSync file + defaultExts[i], ''
+    while i < testExts.length
+      fs.writeFileSync file + testExts[i], ''
       i++
 
     server.watch(dir);
     ws = new WebSocket('ws://localhost:35729/livereload')
 
     # change files after 1 second
-    # this dealy is due to the fact that the refresh function does not run
+    # this delay is due to the fact that the refresh function does not run
     # if the time difference between the changes is less than 1 second
     setTimeout (->
       i = 0
-      while i < defaultExts.length
-        fs.writeFile file + defaultExts[i], ''
+      while i < testExts.length
+        fs.writeFile file + testExts[i], ''
         i++
     ), 1000
 
@@ -119,34 +119,74 @@ describe 'livereload file watching', ->
         cloneExts.splice(pos, 1)
         fs.unlink file + ext
 
-        if cloneExts.length == 0
-          # remove created test folder
-          fs.rmdirSync(dir)
-          
-          server.config.server.close()
-          ws.close()
+    setTimeout (->
+      cloneExts.length.should.equal 0
 
-          done()
+      # remove created test folder
+      fs.rmdirSync(dir)
+      
+      server.config.server.close()
+      ws.close()
+
+      done()
+
+    ), 2000
 
   it 'should correctly ignore common exclusions', (done) ->
     # TODO check it ignores common exclusions
     dir = './test/output/'
     file = dir + 'index.'
     server = livereload.createServer({port: 35729})
-    defaultExts = server.config.exts
-    defaultExclusions = server.config.exclusions
-    cloneExts = defaultExts.slice 0
-    cloneExclusions = defaultExclusions.slice 0
-
-    console.log defaultExclusions
+    testExts = server.config.exclusions
+    cloneExts = testExts.slice 0
+    
+    # create folder and files to watch
+    if !fs.existsSync(dir)
+      fs.mkdirSync(dir)
+    i = 0
+    while i < testExts.length
+      fs.writeFileSync file + testExts[i], ''
+      i++
 
     server.watch(dir);
     ws = new WebSocket('ws://localhost:35729/livereload')
 
-    server.config.server.close()
-    ws.close()
+    # change files after 1 second
+    # this delay is due to the fact that the refresh function does not run
+    # if the time difference between the changes is less than 1 second
+    setTimeout (->
+      i = 0
+      while i < testExts.length
+        fs.writeFile file + testExts[i], ''
+        i++
+    ), 1000
 
-    done()
+    ws.on 'message', (data, flags) ->
+      if data == '!!ver:1.6'
+        # first call when we start the websocket, do nothing
+      else
+        res = JSON.parse(data)
+        ext = res[1].path.match(/(\.)([0-9a-z]+$)/i)[2];
+        pos = cloneExts.indexOf(ext)
+        
+        pos.should.not.equal -1
+        res[0].should.equal 'refresh'
+        
+        cloneExts.splice(pos, 1)
+        fs.unlink file + ext
+
+    setTimeout (->
+      cloneExts.length.should.equal testExts.length
+
+      # remove created test folder
+      fs.rmdirSync(dir)
+      
+      server.config.server.close()
+      ws.close()
+
+      done()
+
+    ), 2000
 
   it 'should not exclude a dir named git', (done) ->
     # cf. issue #20
