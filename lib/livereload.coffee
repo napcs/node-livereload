@@ -1,9 +1,10 @@
 fs   = require 'fs'
 path = require 'path'
-ws   = require 'websocket.io'
+ws   = require 'ws'
 http  = require 'http'
 https = require 'https'
 url = require 'url'
+chokidar = require 'chokidar'
 
 protocol_version = '1.6'
 defaultPort = 35729
@@ -35,82 +36,54 @@ class Server
     @config.originalPath ?= ''
     @config.overrideURL ?= ''
 
-    @config.interval ?= 1000
-
-    @sockets = []
-
   listen: ->
     @debug "LiveReload is waiting for browser to connect."
 
     if @config.server
       @config.server.listen @config.port
-      @server = ws.attach(@config.server)
+      @server = new ws.Server({server: @config.server})
     else
-      @server = ws.listen(@config.port)
+      @server = new ws.Server({port: @config.port})
 
     @server.on 'connection', @onConnection.bind @
     @server.on 'close',      @onClose.bind @
 
-
   onConnection: (socket) ->
     @debug "Browser connected."
+
     socket.send "!!ver:#{@config.version}"
 
     socket.on 'message', (message) =>
-      @debug "Browser URL: #{message}"
+      if (@config.debug)
+        @debug "Browser URL: #{message}"
+
+    # FIXME: This doesn't seem to be firing either.
     socket.on 'error', (err) =>
       @debug "Error in client socket: #{err}"
 
-    @sockets.push socket
 
+  # FIXME: This does not seem to be firing
   onClose: (socket) ->
     @debug "Browser disconnected."
 
-  walkTree: (dirname, callback) ->
-    exts       = @config.exts
-    exclusions = @config.exclusions
+  watch: (paths) ->
+    @watcher = chokidar.watch paths, {ignoreInitial: true, ignored: @config.exclusions}
+    @watcher.on 'add', (path) => @filterRefresh path
+    @watcher.on 'change', (path) => @filterRefresh path
+    @watcher.on 'unlink', (path) => @filterRefresh path
 
-    walk = (dirname) ->
-      fs.readdir dirname, (err, files) ->
-        if err then return callback err
+  filterRefresh: (filepath) ->
+    exts = @config.exts
+    fileext = path.extname filepath
+                  .substring 1
+    for ext in exts when ext == fileext
+      @refresh filepath
+      break
 
-        files.forEach (file) ->
-          filename = path.join dirname, file
-
-          for exclusion in exclusions
-            return if filename.match exclusion
-
-          fs.stat filename, (err, stats) ->
-            if !err and stats.isDirectory()
-              walk filename
-            else
-              for ext in exts when filename.match "\\.#{ext}$"
-                callback err, filename
-                break
-
-    walk dirname, callback
-
-  watch: (dirname) ->
-    dirname = [dirname] if typeof dirname is "string"
-
-    dirname.forEach (dir) =>
-      @walkTree dir, (err, filename) =>
-        throw err if err
-        fs.watchFile filename, {interval: @config.interval}, (curr, prev) =>
-          @refresh filename if curr.mtime > prev.mtime
-
-  unwatch: (dirname) ->
-    dirname = [dirname] if typeof dirname is "string"
-
-    dirname.forEach (dir) =>
-      @walkTree dir, (err, filename) =>
-        throw err if err
-        fs.unwatchFile filename
-
-  refresh: (path) ->
-    @debug "Refresh: #{path}"
+  refresh: (filepath) ->
+    @debug "Refresh: #{filepath}"
     data = JSON.stringify ['refresh',
-      path: path,
+      path: filepath,
       apply_js_live: @config.applyJSLive,
       apply_css_live: @config.applyCSSLive,
       apply_img_live: @config.applyImgLive,
@@ -118,8 +91,10 @@ class Server
       override_url: this.config.overrideURL
     ]
 
-    for socket in @sockets
-      socket.send data
+    for socket in @server.clients
+      socket.send data, (error) =>
+        if error
+          @debug error
 
   debug: (str) ->
     if @config.debug

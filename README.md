@@ -6,7 +6,33 @@ An implementation of the LiveReload server in Node.js. It's an alternative to th
 
 # Example Usage
 
-First, install the LiveReload browser plugins by visiting [http://help.livereload.com/kb/general-use/browser-extensions](http://help.livereload.com/kb/general-use/browser-extensions).
+You can use this by either adding a snippet of code to the bottom of your HTML pages **or** install the Browser Extensions.
+
+## Method 1: Add browser extension
+
+Install the LiveReload browser plugins by visiting [http://help.livereload.com/kb/general-use/browser-extensions](http://help.livereload.com/kb/general-use/browser-extensions).
+
+Only Google Chrome supports viewing `file:///` URLS, and you have to specifically enable it. If you are using other browsers and want to use `file:///` URLs, add the JS code to the page as shown in the next section.
+
+## Method 2: Add code to page
+
+Add this code:
+
+```
+<script>
+  document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] +
+  ':35729/livereload.js?snipver=1"></' + 'script>')
+</script>
+```
+
+Note: If you are using a different port other than `35729` you will
+need to change the above script.
+
+# Running LiveReload
+
+You can run LiveReload two ways:
+
+## Option 1: Command line
 
 To use livereload from the command line:
 
@@ -14,11 +40,13 @@ To use livereload from the command line:
     $ livereload [path]
 
 
-Or to use the api within a project:
+## Option 2: From within your own project
+
+To use the api within a project:
 
     $ npm install livereload
 
-Then, simply create a server and fire it up.
+Then, create a server and fire it up.
 
     livereload = require('livereload');
     server = livereload.createServer();
@@ -38,7 +66,7 @@ You can also use this with a Connect server:
 
 Watching multiple paths:
 
-Passing an array of paths will allow you to watch multiple directories. All directories have the same configuration options.
+Passing an array of paths or glob patterns will allow you to watch multiple directories. All directories have the same configuration options.
 
 ```js
 server.watch([__dirname + "/js", __dirname + "/css"]);
@@ -52,16 +80,16 @@ var server = livereload.createServer({
     originalPath: "http://domain.com"
 });
 server.watch('/User/Workspace/test');
-```  
+```
 
-`$ node server.js`  
+`$ node server.js`
 
 ```html
 <!-- html -->
 <head>
     <link rel="stylesheet" href="http://domain.com/css/style.css">
 </head>
-```  
+```
 
 When `/User/Workspace/test/css/style.css` modified, the stylesheet will be reload.
 
@@ -70,7 +98,8 @@ When `/User/Workspace/test/css/style.css` modified, the stylesheet will be reloa
 The commandline options are
 
 * `-p` or `--port` to specify the listening port
-* `-i` or `--interval` to specify the listening interval in milliseconds. Default is 1000.
+* `-d` or `--debug` to show debug messages when the browser reloads.
+* `-e` or `--exts` to include additional extentions that you want to observe. An example being -e 'jade scss'.  
 
 Specify the path when using the options.
 
@@ -91,12 +120,10 @@ The `createServer()` method supports a few basic options, passed as a JavaScript
 * `applyCSSLive` tells LiveReload to reload CSS files in the background instead of refreshing the page. The default for this is `true`.
 * `applyImgLive` tells LiveReload to reload image files in the background instead of refreshing the page. The default for this is `true`. Namely for these extensions: jpg, jpeg, png, gif
 * `exclusions` lets you specify files to ignore. By default, this includes `.git/`, `.svn/`, and `.hg/`
-* `originalPath` Set URL you use for development, e.g 'http:/domain.com', then LiveReload will proxy this url to local path.  
-* `overrideURL` override the stylesheet href with your set.
+* `originalPath` Set URL you use for development, e.g 'http:/domain.com', then LiveReload will proxy this url to local path.
+* `overrideURL` lets you specify a different host for CSS files. This lets you edit local CSS files but view a live site. See <http://feedback.livereload.com/knowledgebase/articles/86220-preview-css-changes-against-a-live-site-then-uplo> for details.
 
-# Limitations
 
-Right now this is extremely simple. It relies on polling so there's a delay in refreshing the browser. It could be faster.
 
 # License
 
