@@ -6,6 +6,7 @@ url = require 'url'
 fs = require 'fs'
 path = require 'path'
 WebSocket = require 'ws'
+rmdir = require 'rmdir'
 
 describe 'livereload http file serving', ->
 
@@ -76,77 +77,81 @@ describe 'livereload http file serving', ->
 
 describe 'livereload file watching', ->
 
-  it 'should correctly watch common files', (done) ->
-    # TODO check it watches default exts
-    dir = './test/output/'
-    file = dir + 'index.'
-    server = livereload.createServer({port: 35729})
-    testExts = server.config.exts
-    cloneExts = testExts.slice 0
+  # it 'should correctly watch common files', (done) ->
+  #   # TODO check it watches default exts
+  #   dir = './test/output/'
+  #   file = dir + 'index.'
+  #   server = livereload.createServer({port: 35729})
+  #   testExts = ['html', 'css', 'js', 'png', 'gif', 'jpg', 'php', 'php5', 'py', 'rb', 'erb', 'coffee']
+  #   cloneExts = testExts.slice 0
     
-    # create folder and files to watch
-    if !fs.existsSync(dir)
-      fs.mkdirSync(dir)
-    i = 0
-    while i < testExts.length
-      fs.writeFileSync file + testExts[i], ''
-      i++
+  #   # create folder and files to watch
+  #   if !fs.existsSync(dir)
+  #     fs.mkdirSync(dir)
+  #   i = 0
+  #   while i < testExts.length
+  #     fs.writeFileSync file + testExts[i], ''
+  #     i++
 
-    server.watch(dir);
-    ws = new WebSocket('ws://localhost:35729/livereload')
+  #   server.watch(dir);
+  #   ws = new WebSocket('ws://localhost:35729/livereload')
 
-    # change files after 1 second
-    # this delay is due to the fact that the refresh function does not run
-    # if the time difference between the changes is less than 1 second
-    setTimeout (->
-      i = 0
-      while i < testExts.length
-        fs.writeFile file + testExts[i], ''
-        i++
-    ), 1000
+  #   # change files after 1 second
+  #   # this delay is due to the fact that the refresh function does not run
+  #   # if the time difference between the changes is less than 1 second
+  #   setTimeout (->
+  #     i = 0
+  #     while i < testExts.length
+  #       fs.writeFile file + testExts[i], ''
+  #       i++
+  #   ), 1000
 
-    ws.on 'message', (data, flags) ->
-      if data == '!!ver:1.6'
-        # first call when we start the websocket, do nothing
-      else
-        res = JSON.parse(data)
-        ext = res[1].path.match(/(\.)([0-9a-z]+$)/i)[2];
-        pos = cloneExts.indexOf(ext)
+  #   ws.on 'message', (data, flags) ->
+  #     if data == '!!ver:1.6'
+  #       # first call when we start the websocket, do nothing
+  #     else
+  #       res = JSON.parse(data)
+  #       ext = res[1].path.match(/(\.)([0-9a-z]+$)/i)[2];
+  #       pos = cloneExts.indexOf(ext)
         
-        pos.should.not.equal -1
-        res[0].should.equal 'refresh'
+  #       pos.should.not.equal -1
+  #       res[0].should.equal 'refresh'
         
-        cloneExts.splice(pos, 1)
-        fs.unlink file + ext
+  #       cloneExts.splice(pos, 1)
 
-    setTimeout (->
-      cloneExts.length.should.equal 0
+  #   setTimeout (->
+  #     cloneExts.length.should.equal 0
 
-      # remove created test folder
-      fs.rmdirSync(dir)
-      
-      server.config.server.close()
-      ws.close()
-
-      done()
-
-    ), 2000
+  #     # remove created test folder and files
+  #     rmdir dir, () ->      
+  #       server.config.server.close()
+  #       ws.close()
+  #       done()
+  #   ), 2000
 
   it 'should correctly ignore common exclusions', (done) ->
     # TODO check it ignores common exclusions
     dir = './test/output/'
-    file = dir + 'index.'
+    file = 'index.'
     server = livereload.createServer({port: 35729})
-    testExts = server.config.exclusions
-    cloneExts = testExts.slice 0
+    testExts = testExts = ['html', 'css', 'js', 'png', 'gif', 'jpg', 'php', 'php5', 'py', 'rb', 'erb', 'coffee']
+    testFolders = ['.git/', '.svn/', '.hg/']
+    testCounter = testExts.length * testFolders.length
+    cloneExts = []
     
     # create folder and files to watch
     if !fs.existsSync(dir)
       fs.mkdirSync(dir)
-    i = 0
-    while i < testExts.length
-      fs.writeFileSync file + testExts[i], ''
-      i++
+    j = 0
+    while j < testFolders.length
+      if !fs.existsSync(dir + testFolders[j])
+        fs.mkdirSync(dir + testFolders[j])
+      i = 0
+      while i < testExts.length
+        cloneExts.push testFolders[j] + testExts[i]
+        fs.writeFileSync dir + testFolders[j] + file + testExts[i], ''
+        i++
+      j++
 
     server.watch(dir);
     ws = new WebSocket('ws://localhost:35729/livereload')
@@ -155,39 +160,40 @@ describe 'livereload file watching', ->
     # this delay is due to the fact that the refresh function does not run
     # if the time difference between the changes is less than 1 second
     setTimeout (->
-      i = 0
-      while i < testExts.length
-        fs.writeFile file + testExts[i], ''
-        i++
+      j = 0
+      while j < testFolders.length
+        i = 0
+        while i < testExts.length
+          fs.writeFile dir + testFolders[j] + file + testExts[i], ''
+          i++
+        j++
     ), 1000
 
     ws.on 'message', (data, flags) ->
       if data == '!!ver:1.6'
         # first call when we start the websocket, do nothing
       else
+        console.log data
         res = JSON.parse(data)
         ext = res[1].path.match(/(\.)([0-9a-z]+$)/i)[2];
         pos = cloneExts.indexOf(ext)
         
-        pos.should.not.equal -1
-        res[0].should.equal 'refresh'
+        # pos.should.not.equal -1
+        # res[0].should.equal 'refresh'
         
         cloneExts.splice(pos, 1)
-        fs.unlink file + ext
 
     setTimeout (->
-      cloneExts.length.should.equal testExts.length
+      cloneExts.length.should.equal testCounter
 
-      # remove created test folder
-      fs.rmdirSync(dir)
-      
-      server.config.server.close()
-      ws.close()
-
-      done()
+      # remove created test folder and files
+      rmdir dir, () ->      
+        server.config.server.close()
+        ws.close()
+        done()
 
     ), 2000
 
-  it 'should not exclude a dir named git', (done) ->
-    # cf. issue #20
-    done()
+  # it 'should not exclude a dir named git', (done) ->
+  #   # cf. issue #20
+  #   done()
