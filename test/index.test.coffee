@@ -183,5 +183,34 @@ describe 'livereload file watching', ->
         done()
     ), 1000
 
-  it 'should not exclude a dir named git', ->
+  it 'should not exclude a dir named git', (done) ->
     # cf. issue #20
+    dir = path.join('test', 'output')
+    testFolder = path.join(dir, 'git')
+    testFile = path.join(testFolder, 'index.html')
+    server = livereload.createServer({port: 35729})
+
+    fs.mkdirSync(dir)
+    fs.mkdirSync(testFolder)
+
+    server.watch(dir);
+    ws = new WebSocket('ws://localhost:35729/livereload')
+
+    ws.on 'message', (data, flags) ->
+      if data == '!!ver:1.6'
+        # this is the when we are connected to the server
+        # so we can now modify the files
+        fs.writeFileSync testFile, ''
+      else
+        try
+          res = JSON.parse(data)
+        catch error
+          should.not.exist error
+
+        res[1].path.should.equal testFile
+        res[0].should.equal 'refresh'
+
+        server.config.server.close()
+        ws.close()
+        rmdir dir, ->
+          done()
