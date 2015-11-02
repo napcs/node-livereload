@@ -6,6 +6,7 @@ url = require 'url'
 fs = require 'fs'
 path = require 'path'
 WebSocket = require 'ws'
+rmdir = require 'rmdir'
 
 describe 'livereload http file serving', ->
 
@@ -76,8 +77,56 @@ describe 'livereload http file serving', ->
 
 describe 'livereload file watching', ->
 
-  it 'should correctly watch common files', ->
-    # TODO check it watches default exts
+  it 'should correctly watch common files', (done) ->
+    dir = path.join('test', 'output')
+    file = path.join(dir, 'index.')
+    server = livereload.createServer({port: 35729})
+    exts = ['html', 'css', 'js', 'png', 'gif', 'jpg', 'php', 'php5', 'py', 'rb', 'erb', 'coffee']
+    testFiles = []
+    responses = []
+
+    i = 0
+    while i < exts.length
+      testFiles.push file + exts[i]
+      responses.push file + exts[i]
+      i++
+
+    # create folder to watch, but reset it if exists (from a previous broken test)
+    if fs.existsSync(dir)
+      rmdir dir, (error) ->
+        should.not.exist error
+        fs.mkdirSync(dir)
+    else
+      fs.mkdirSync(dir)
+
+    server.watch(dir);
+    ws = new WebSocket('ws://localhost:35729/livereload')
+
+    ws.on 'message', (data, flags) ->
+      if data == '!!ver:1.6'
+        # this is the when we are connected to the server
+        # so we can now modify the files
+        i = 0
+        while i < testFiles.length
+          fs.writeFileSync testFiles[i], 'a'
+          i++
+      else
+        try
+          res = JSON.parse(data)
+        catch error
+          should.not.exist error
+
+        pos = responses.indexOf(res[1].path)
+        pos.should.not.equal -1
+        res[0].should.equal 'refresh'
+
+        responses.splice(pos, 1)
+
+      if responses.length == 0
+        server.config.server.close()
+        ws.close()
+        rmdir dir, ->
+        done()
 
   it 'should correctly ignore common exclusions', ->
     # TODO check it ignores common exclusions
