@@ -79,6 +79,8 @@ describe 'livereload file watching', ->
 
   output = path.join('test', 'output')
   firstMsg = '!!ver:1.6'
+  server = null
+  ws = null
   
   before (done) ->
     if fs.existsSync output
@@ -87,9 +89,28 @@ describe 'livereload file watching', ->
     else
       done()
 
+  beforeEach (done) ->
+    fs.mkdirSync(output)
+    server = livereload.createServer({port: 35729})
+    server.watch(output)
+    ws = new WebSocket('ws://localhost:35729/livereload')
+    done()
+
+  afterEach (done) ->
+    server.config.server.close()
+    ws.close()
+    rmdir output, ->
+      done()
+
+  after (done) ->
+    if fs.existsSync output
+      rmdir output, ->
+        done()
+    else
+      done()
+
   it 'should correctly watch common files', (done) ->
     file = path.join(output, 'index.')
-    server = livereload.createServer({port: 35729})
     exts = ['html', 'css', 'js', 'png', 'gif', 'jpg', 'php', 'php5', 'py', 'rb', 'erb', 'coffee']
     testFiles = []
     responses = []
@@ -100,14 +121,9 @@ describe 'livereload file watching', ->
       responses.push file + exts[i]
       i++
 
-    fs.mkdirSync(output)
-
-    server.watch(output);
-    ws = new WebSocket('ws://localhost:35729/livereload')
-
     ws.on 'message', (data, flags) ->
       if data == firstMsg
-        # this is the when we are connected to the server
+        # this is when we are connected to the server
         # so we can now modify the files
         i = 0
         while i < testFiles.length
@@ -126,20 +142,13 @@ describe 'livereload file watching', ->
         responses.splice(pos, 1)
 
       if responses.length == 0
-        server.config.server.close()
-        ws.close()
-        rmdir output, ->
-          done()
+        done()
 
   it 'should correctly ignore common exclusions', (done) ->
-    # TODO check it ignores common exclusions
     file = 'index.html'
-    server = livereload.createServer({port: 35729})
-    folders = ['.git', '.svn', '.hg'];
+    folders = ['.git', '.svn', '.hg']
     testFiles = []
     responses = []
-
-    fs.mkdirSync(output)
 
     i = 0
     while i < folders.length
@@ -150,12 +159,9 @@ describe 'livereload file watching', ->
       fs.mkdirSync(d)
       i++
 
-    server.watch(output);
-    ws = new WebSocket('ws://localhost:35729/livereload')
-
     ws.on 'message', (data, flags) ->
       if data == firstMsg
-        # this is the when we are connected to the server
+        # this is when we are connected to the server
         # so we can now modify the files
         i = 0
         while i < testFiles.length
@@ -171,28 +177,21 @@ describe 'livereload file watching', ->
         pos.should.equal -1
         res[0].should.equal 'refresh'
 
+    # if nothing happens in 1 second, test is succesful
     setTimeout (->
-      server.config.server.close()
-      ws.close()
-      rmdir output, ->
-        done()
+      done()
     ), 1000
 
   it 'should not exclude a dir named git', (done) ->
     # cf. issue #20
     testFolder = path.join(output, 'git')
     testFile = path.join(testFolder, 'index.html')
-    server = livereload.createServer({port: 35729})
 
-    fs.mkdirSync(output)
     fs.mkdirSync(testFolder)
-
-    server.watch(output);
-    ws = new WebSocket('ws://localhost:35729/livereload')
 
     ws.on 'message', (data, flags) ->
       if data == firstMsg
-        # this is the when we are connected to the server
+        # this is when we are connected to the server
         # so we can now modify the files
         fs.writeFileSync testFile, ''
       else
@@ -204,7 +203,4 @@ describe 'livereload file watching', ->
         res[1].path.should.equal testFile
         res[0].should.equal 'refresh'
 
-        server.config.server.close()
-        ws.close()
-        rmdir output, ->
-          done()
+        done()
