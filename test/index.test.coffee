@@ -102,13 +102,6 @@ describe 'livereload file watching', ->
     rmdir output, ->
       done()
 
-  after (done) ->
-    if fs.existsSync output
-      rmdir output, ->
-        done()
-    else
-      done()
-
   it 'should correctly watch common files', (done) ->
     file = path.join(output, 'index.')
     exts = ['html', 'css', 'js', 'png', 'gif', 'jpg', 'php', 'php5', 'py', 'rb', 'erb', 'coffee']
