@@ -128,8 +128,60 @@ describe 'livereload file watching', ->
         rmdir dir, ->
         done()
 
-  it 'should correctly ignore common exclusions', ->
+  it 'should correctly ignore common exclusions', (done) ->
     # TODO check it ignores common exclusions
+    dir = path.join('test', 'output')
+    file = 'index.html'
+    server = livereload.createServer({port: 35729})
+    folders = ['.git', '.svn', '.hg'];
+    testFiles = []
+    responses = []
+
+    # create folder to watch, but reset it if already exists
+    # if fs.existsSync(dir)
+    #   rmdir dir, (error) ->
+    #     should.not.exist error
+    #     fs.mkdirSync(dir)
+    # else
+    #   fs.mkdirSync(dir)
+    fs.mkdirSync(dir)
+
+    i = 0
+    while i < folders.length
+      d = path.join(dir, folders[i])
+      f = path.join(d, file)
+      testFiles.push(f)
+      responses.push(f)
+      fs.mkdirSync(d)
+      i++
+
+    server.watch(dir);
+    ws = new WebSocket('ws://localhost:35729/livereload')
+
+    ws.on 'message', (data, flags) ->
+      if data == '!!ver:1.6'
+        # this is the when we are connected to the server
+        # so we can now modify the files
+        i = 0
+        while i < testFiles.length
+          fs.writeFileSync testFiles[i], ''
+          i++
+      else
+        try
+          res = JSON.parse(data)
+        catch error
+          should.not.exist error
+
+        pos = responses.indexOf(res[1].path)
+        pos.should.equal -1
+        res[0].should.equal 'refresh'
+
+    setTimeout (->
+      server.config.server.close()
+      ws.close()
+      rmdir dir, ->
+        done()
+    ), 1000
 
   it 'should not exclude a dir named git', ->
     # cf. issue #20
