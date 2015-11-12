@@ -197,3 +197,30 @@ describe 'livereload file watching', ->
         res[0].should.equal 'refresh'
 
         done()
+
+  it 'should watch and then unwatch a folder', (done) ->
+    testFile = path.join(output, 'index.html')
+    watched = false;
+
+    ws.on 'message', (data, flags) ->
+      if data == firstMsg
+        # this is when we are connected to the server
+        # so we can now modify the files
+        fs.writeFileSync testFile, ''
+      else
+        try
+          res = JSON.parse(data)
+        catch error
+          should.not.exist error
+
+        watched.should.equal false
+        watched = true
+        res[1].path.should.equal testFile
+        res[0].should.equal 'refresh'
+        server.watcher.unwatch(output)
+        fs.writeFileSync testFile, ''
+
+    # if nothing happens in 1 second, test is succesful
+    setTimeout (->
+      done()
+    ), 1000
