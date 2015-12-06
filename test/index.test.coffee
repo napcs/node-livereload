@@ -6,6 +6,7 @@ url = require 'url'
 fs = require 'fs'
 path = require 'path'
 WebSocket = require 'ws'
+rmdir = require 'rmdir'
 
 describe 'livereload http file serving', ->
 
@@ -76,11 +77,150 @@ describe 'livereload http file serving', ->
 
 describe 'livereload file watching', ->
 
-  it 'should correctly watch common files', ->
-    # TODO check it watches default exts
+  output = path.join('test', 'output')
+  firstMsg = '!!ver:1.6'
+  server = null
+  ws = null
+  
+  before (done) ->
+    if fs.existsSync output
+      rmdir output, ->
+        done()
+    else
+      done()
 
-  it 'should correctly ignore common exclusions', ->
-    # TODO check it ignores common exclusions
+  beforeEach (done) ->
+    fs.mkdirSync(output)
+    server = livereload.createServer({port: 35729})
+    server.watch(output)
+    ws = new WebSocket('ws://localhost:35729/livereload')
+    done()
 
-  it 'should not exclude a dir named git', ->
+  afterEach (done) ->
+    server.config.server.close()
+    ws.close()
+    rmdir output, ->
+      done()
+
+  it 'should correctly watch common files', (done) ->
+    file = path.join(output, 'index.')
+    exts = ['html', 'css', 'js', 'png', 'gif', 'jpg', 'php', 'php5', 'py', 'rb', 'erb', 'coffee']
+    testFiles = []
+    responses = []
+
+    i = 0
+    while i < exts.length
+      testFiles.push file + exts[i]
+      responses.push file + exts[i]
+      i++
+
+    ws.on 'message', (data, flags) ->
+      if data == firstMsg
+        # this is when we are connected to the server
+        # so we can now modify the files
+        i = 0
+        while i < testFiles.length
+          fs.writeFileSync testFiles[i], ''
+          i++
+      else
+        try
+          res = JSON.parse(data)
+        catch error
+          should.not.exist error
+
+        pos = responses.indexOf(res[1].path)
+        pos.should.not.equal -1
+        res[0].should.equal 'refresh'
+
+        responses.splice(pos, 1)
+
+      if responses.length == 0
+        done()
+
+  it 'should correctly ignore common exclusions', (done) ->
+    file = 'index.html'
+    folders = ['.git', '.svn', '.hg']
+    testFiles = []
+    responses = []
+
+    i = 0
+    while i < folders.length
+      d = path.join(output, folders[i])
+      f = path.join(d, file)
+      testFiles.push(f)
+      responses.push(f)
+      fs.mkdirSync(d)
+      i++
+
+    ws.on 'message', (data, flags) ->
+      if data == firstMsg
+        # this is when we are connected to the server
+        # so we can now modify the files
+        i = 0
+        while i < testFiles.length
+          fs.writeFileSync testFiles[i], ''
+          i++
+      else
+        try
+          res = JSON.parse(data)
+        catch error
+          should.not.exist error
+
+        pos = responses.indexOf(res[1].path)
+        pos.should.equal -1
+        res[0].should.equal 'refresh'
+
+    # if nothing happens in 1 second, test is succesful
+    setTimeout (->
+      done()
+    ), 1000
+
+  it 'should not exclude a dir named git', (done) ->
     # cf. issue #20
+    testFolder = path.join(output, 'git')
+    testFile = path.join(testFolder, 'index.html')
+
+    fs.mkdirSync(testFolder)
+
+    ws.on 'message', (data, flags) ->
+      if data == firstMsg
+        # this is when we are connected to the server
+        # so we can now modify the files
+        fs.writeFileSync testFile, ''
+      else
+        try
+          res = JSON.parse(data)
+        catch error
+          should.not.exist error
+
+        res[1].path.should.equal testFile
+        res[0].should.equal 'refresh'
+
+        done()
+
+  it 'should watch and then unwatch a folder', (done) ->
+    testFile = path.join(output, 'index.html')
+    watched = false;
+
+    ws.on 'message', (data, flags) ->
+      if data == firstMsg
+        # this is when we are connected to the server
+        # so we can now modify the files
+        fs.writeFileSync testFile, ''
+      else
+        try
+          res = JSON.parse(data)
+        catch error
+          should.not.exist error
+
+        watched.should.equal false
+        watched = true
+        res[1].path.should.equal testFile
+        res[0].should.equal 'refresh'
+        server.watcher.unwatch(output)
+        fs.writeFileSync testFile, ''
+
+    # if nothing happens in 1 second, test is succesful
+    setTimeout (->
+      done()
+    ), 1000

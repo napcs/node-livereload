@@ -20,6 +20,7 @@
     "ws": "^0.8.0"
   }
 , "devDependencies": {
+    "rmdir": "^1.1.0",
     "request": ">= 2.9.203",
     "should": ">= 0.6.3",
     "mocha": ">= 1.0.3",
