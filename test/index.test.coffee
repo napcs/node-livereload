@@ -6,6 +6,7 @@ url = require 'url'
 fs = require 'fs'
 path = require 'path'
 WebSocket = require 'ws'
+rmdir = require 'rmdir'
 
 describe 'livereload http file serving', ->
 
@@ -76,11 +77,169 @@ describe 'livereload http file serving', ->
 
 describe 'livereload file watching', ->
 
-  it 'should correctly watch common files', ->
-    # TODO check it watches default exts
+  it 'should correctly watch common files', (done) ->
+    dir = path.join(process.cwd(), 'test', 'output')
+    file = path.join(dir, 'index.')
+    server = livereload.createServer({port: 35729})
+    testExts = ['html', 'css', 'js', 'png', 'gif', 'jpg', 'php', 'php5', 'py', 'rb', 'erb', 'coffee']
+    cloneExts = testExts.slice 0
+    
+    # create folder and files to watch
+    if !fs.existsSync(dir)
+      fs.mkdirSync(dir)
+    i = 0
+    while i < testExts.length
+      fs.writeFileSync file + testExts[i], ''
+      i++
 
-  it 'should correctly ignore common exclusions', ->
-    # TODO check it ignores common exclusions
+    server.watch(dir);
+    ws = new WebSocket('ws://localhost:35729/livereload')
 
-  it 'should not exclude a dir named git', ->
+    # change files after 1 second
+    # this delay is due to the fact that the refresh function does not run
+    # if the time difference between the changes is less than 1 second
+    setTimeout (->
+      i = 0
+      while i < testExts.length
+        fs.writeFile file + testExts[i], ''
+        i++
+    ), 1000
+
+    ws.on 'message', (data, flags) ->
+      if data == '!!ver:1.6'
+        # first call when we start the websocket, do nothing
+      else
+        res = JSON.parse(data)
+        ext = res[1].path.match(/(\.)([0-9a-z]+$)/i)[2];
+        pos = cloneExts.indexOf(ext)
+        
+        pos.should.not.equal -1
+        res[0].should.equal 'refresh'
+        
+        cloneExts.splice(pos, 1)
+
+    setTimeout (->
+      cloneExts.length.should.equal 0
+
+      # remove created test folder and files
+      rmdir dir, () ->      
+        server.config.server.close()
+        ws.close()
+        done()
+    ), 2000
+
+  it 'should correctly ignore common exclusions', (done) ->
+    dir = path.join(process.cwd(), 'test', 'output')
+    file = 'index.'
+    server = livereload.createServer({port: 35729})
+    testExts = ['html', 'css', 'js', 'png', 'gif', 'jpg', 'php', 'php5', 'py', 'rb', 'erb', 'coffee']
+    testFolders = ['.git', '.svn', '.hg']
+    testCounter = testExts.length * testFolders.length
+    cloneExts = []
+    
+    # create folder and files to watch
+    if !fs.existsSync(dir)
+      fs.mkdirSync(dir)
+    j = 0
+    while j < testFolders.length
+      tmpDir = path.join(dir, testFolders[j])
+      if !fs.existsSync(tmpDir)
+        fs.mkdirSync(tmpDir)
+      i = 0
+      while i < testExts.length
+        cloneExts.push path.join('test', 'output', file + testExts[i])
+        fs.writeFileSync path.join(tmpDir, file + testExts[i]), ''
+        i++
+      j++
+
+    server.watch(dir);
+    ws = new WebSocket('ws://localhost:35729/livereload')
+
+    # change files after 1 second
+    # this delay is due to the fact that the refresh function does not run
+    # if the time difference between the changes is less than 1 second
+    setTimeout (->
+      j = 0
+      while j < testFolders.length
+        i = 0
+        while i < testExts.length
+          fs.writeFile path.join(dir, testFolders[j], file + testExts[i]), ''
+          i++
+        j++
+    ), 1000
+
+    ws.on 'message', (data, flags) ->
+      if data == '!!ver:1.6'
+        # first call when we start the websocket, do nothing
+      else
+        console.log data
+        res = JSON.parse(data)
+        pos = cloneExts.indexOf(res[1].path)
+        
+        cloneExts.splice(pos, 1)
+
+    setTimeout (->
+      cloneExts.length.should.equal testCounter
+
+      # remove created test folder and files
+      rmdir dir, () ->      
+        server.config.server.close()
+        ws.close()
+        done()
+
+    ), 2000
+
+  it 'should not exclude a dir named git', (done) ->
     # cf. issue #20
+    dir = path.join(process.cwd(), 'test', 'output')
+    file = 'index.'
+    server = livereload.createServer({port: 35729})
+    testExts = ['html', 'css', 'js', 'png', 'gif', 'jpg', 'php', 'php5', 'py', 'rb', 'erb', 'coffee']
+    testFolder = path.join(dir, 'git')
+    cloneExts = testExts.slice 0
+    
+    # create folder and files to watch
+    if !fs.existsSync(dir)
+      fs.mkdirSync(dir)
+    if !fs.existsSync(testFolder)
+      fs.mkdirSync(testFolder)
+    i = 0
+    while i < testExts.length
+      fs.writeFileSync path.join(testFolder, file + testExts[i]), ''
+      i++
+
+    server.watch(dir);
+    ws = new WebSocket('ws://localhost:35729/livereload')
+    
+    # change files after 1 second
+    # this delay is due to the fact that the refresh function does not run
+    # if the time difference between the changes is less than 1 second
+    setTimeout (->
+      i = 0
+      while i < testExts.length
+        fs.writeFile path.join(testFolder, file + testExts[i]), ''
+        i++
+    ), 1000
+
+    ws.on 'message', (data, flags) ->
+      if data == '!!ver:1.6'
+        # first call when we start the websocket, do nothing
+      else
+        res = JSON.parse(data)
+        ext = res[1].path.match(/(\.)([0-9a-z]+$)/i)[2];
+        pos = cloneExts.indexOf(ext)
+        
+        pos.should.not.equal -1
+        res[0].should.equal 'refresh'
+        
+        cloneExts.splice(pos, 1)
+
+    setTimeout (->
+      cloneExts.length.should.equal 0
+
+      # remove created test folder and files
+      rmdir dir, () ->      
+        server.config.server.close()
+        ws.close()
+        done()
+    ), 2000
