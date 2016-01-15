@@ -81,10 +81,10 @@ class Server
     fileext = path.extname filepath
                   .substring 1
 
-    setTimeout ->
-        for ext in exts when ext == fileext
-          @refresh filepath
-          break
+    setTimeout =>
+      for ext in exts when ext == fileext
+        @refresh filepath
+        break
     , 1000 * @config.delay
 
   refresh: (filepath) ->
