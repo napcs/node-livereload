@@ -38,6 +38,8 @@ class Server
 
     @config.usePolling ?= false
 
+    @config.delay ?= 0
+
   listen: ->
     @debug "LiveReload is waiting for browser to connect."
 
@@ -78,9 +80,12 @@ class Server
     exts = @config.exts
     fileext = path.extname filepath
                   .substring 1
-    for ext in exts when ext == fileext
-      @refresh filepath
-      break
+
+    setTimeout =>
+      for ext in exts when ext == fileext
+        @refresh filepath
+        break
+    , 1000 * @config.delay
 
   refresh: (filepath) ->
     @debug "Refresh: #{filepath}"
