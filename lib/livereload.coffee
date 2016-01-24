@@ -38,6 +38,8 @@ class Server
 
     @config.usePolling ?= false
 
+    this.sockets = []
+
   listen: ->
     @debug "LiveReload is waiting for browser to connect."
 
@@ -67,6 +69,7 @@ class Server
   # FIXME: This does not seem to be firing
   onClose: (socket) ->
     @debug "Browser disconnected."
+    this.sockets.splice(socket, 1)
 
   watch: (paths) ->
     @watcher = chokidar.watch paths, {ignoreInitial: true, ignored: @config.exclusions, usePolling: @config.usePolling}
