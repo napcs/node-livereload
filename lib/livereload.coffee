@@ -38,6 +38,9 @@ class Server
 
     @config.usePolling ?= false
 
+    @config.wait ?= 0
+    @config.delay = @config.wait
+
   listen: ->
     @debug "LiveReload is waiting for browser to connect."
 
