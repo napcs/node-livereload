@@ -38,14 +38,14 @@ class Server
 
     @config.usePolling ?= false
 
-  listen: ->
+  listen: (callback) ->
     @debug "LiveReload is waiting for browser to connect."
 
     if @config.server
       @config.server.listen @config.port
-      @server = new ws.Server({server: @config.server})
+      @server = new ws.Server({server: @config.server}, callback)
     else
-      @server = new ws.Server({port: @config.port})
+      @server = new ws.Server({port: @config.port}, callback)
 
     @server.on 'connection', @onConnection.bind @
     @server.on 'close',      @onClose.bind @
@@ -122,7 +122,7 @@ class Server
     @server._server.close()
     @server.close()
 
-exports.createServer = (config = {}) ->
+exports.createServer = (config = {}, callback) ->
   requestHandler = ( req, res )->
     if url.parse(req.url).pathname is '/livereload.js'
       res.writeHead(200, {'Content-Type': 'text/javascript'})
@@ -136,5 +136,5 @@ exports.createServer = (config = {}) ->
 
   server = new Server config
   unless config.noListen
-    server.listen()
+    server.listen(callback)
   server
