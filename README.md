@@ -153,7 +153,7 @@ The `createServer()` method supports a few basic options, passed as a JavaScript
 * `overrideURL` lets you specify a different host for CSS files. This lets you edit local CSS files but view a live site. See <http://feedback.livereload.com/knowledgebase/articles/86220-preview-css-changes-against-a-live-site-then-uplo> for details.
 * `usePolling` Poll for file system changes. Set this to true to successfully watch files over a network.
 * `delay` add a delay (in miliseconds) between when livereload detects a change to the filesystem and when it notifies the browser. Useful if the browser is reloading/refreshing before a file has been compiled, for example, by browserify.
-
+* `noListen` Pass as `true` to indicate that the websocker server should not be started automatically. (useful if you want to start it yourself later)
 
 
 # License

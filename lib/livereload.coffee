@@ -135,5 +135,6 @@ exports.createServer = (config = {}) ->
   config.server ?= app
 
   server = new Server config
-  server.listen()
+  unless config.noListen
+    server.listen()
   server
