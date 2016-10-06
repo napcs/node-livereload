@@ -18,7 +18,7 @@ Only Google Chrome supports viewing `file:///` URLS, and you have to specificall
 
 Add this code:
 
-```
+```html
 <script>
   document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] +
   ':35729/livereload.js?snipver=1"></' + 'script>')
@@ -48,14 +48,16 @@ To use the api within a project:
 
 Then, create a server and fire it up.
 
-    livereload = require('livereload');
-    server = livereload.createServer();
-    server.watch(__dirname + "/public");
+```js
+var livereload = require('livereload');
+var server = livereload.createServer();
+server.watch(__dirname + "/public");
+```
 
 You can also use this with a Connect server. Here's an example of a simple server
 using `connect` and a few other modules just to give you an idea:
 
-~~~
+```js
 var connect  = require('connect');
 var compiler = require('connect-compiler');
 var static = require('serve-static');
@@ -77,7 +79,7 @@ server.listen(3000);
 livereload = require('livereload');
 server = livereload.createServer();
 server.watch(__dirname + "/public");
-~~~
+```
 
 You can then start up the server which will listen on port `3000`.
 
