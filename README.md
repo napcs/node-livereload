@@ -80,9 +80,9 @@ server.use(  static(__dirname + '/public'));
 
 server.listen(3000);
 
-livereload = require('livereload');
-server = livereload.createServer();
-server.watch(__dirname + "/public");
+var livereload = require('livereload');
+var lrserver = livereload.createServer();
+lrserver.watch(__dirname + "/public");
 ```
 
 You can then start up the server which will listen on port `3000`.
