@@ -75,6 +75,11 @@ describe 'livereload http file serving', ->
 
       done()
 
+  it 'should support passing a callback to the websocket server', (done) ->
+    server = livereload.createServer {port: 35729}, ->
+      server.config.server.close()
+      done()
+
 describe 'livereload file watching', ->
   describe "config.delay", ->
     tmpFile = tmpFile2 = clock = server = refresh = undefined

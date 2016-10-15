@@ -43,12 +43,14 @@ class Server
 
     if @config.server
       @config.server.listen @config.port
-      @server = new ws.Server({server: @config.server}, callback)
+      @server = new ws.Server({server: @config.server})
     else
-      @server = new ws.Server({port: @config.port}, callback)
+      @server = new ws.Server({port: @config.port})
 
     @server.on 'connection', @onConnection.bind @
     @server.on 'close',      @onClose.bind @
+    if callback
+      @server.once 'listening', callback
 
   onConnection: (socket) ->
     @debug "Browser connected."
