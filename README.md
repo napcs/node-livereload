@@ -145,7 +145,9 @@ $ livereload . -w 1000 -d
 
 # API Options
 
-The `createServer()` method supports a few basic options, passed as a JavaScript object:
+The `createServer()` method accepts two arguments. 
+
+The first are some configuration options, passed as a JavaScript object:
 
 * `https` is an optional object of options to be passed to [https.createServer](http://nodejs.org/api/https.html#https_https_createserver_options_requestlistener) (if not provided, `http.createServer` is used instead)
 * `port` is the listening port. It defaults to `35729` which is what the LiveReload extensions use currently.
@@ -157,12 +159,11 @@ The `createServer()` method supports a few basic options, passed as a JavaScript
 * `exclusions` lets you specify files to ignore. By default, this includes `.git/`, `.svn/`, and `.hg/`
 * `originalPath` Set URL you use for development, e.g 'http:/domain.com', then LiveReload will proxy this url to local path.
 * `overrideURL` lets you specify a different host for CSS files. This lets you edit local CSS files but view a live site. See <http://feedback.livereload.com/knowledgebase/articles/86220-preview-css-changes-against-a-live-site-then-uplo> for details.
-* `usePolling` Poll for file system changes. Set this to true to successfully watch files over a network.
+* `usePolling` Poll for file system changes. Set this to `true` to successfully watch files over a network.
 * `delay` add a delay (in miliseconds) between when livereload detects a change to the filesystem and when it notifies the browser. Useful if the browser is reloading/refreshing before a file has been compiled, for example, by browserify.
 * `noListen` Pass as `true` to indicate that the websocket server should not be started automatically. (useful if you want to start it yourself later)
 
-The 2nd argument is an optional `callback` that will be sent to the websocket Server and called for the `listening` event. (ie: when the server is ready to start accepting connections)
-
+The second argument is an optional `callback` that will be sent to the LiveReload server and called for the `listening` event. (ie: when the server is ready to start accepting connections)
 
 # License
 
