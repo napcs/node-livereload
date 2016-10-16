@@ -2,6 +2,8 @@
 node-livereload
 ===============
 
+![Build status](https://travis-ci.org/napcs/node-livereload.svg?branch=master)
+
 An implementation of the LiveReload server in Node.js. It's an alternative to the graphical [http://livereload.com/](http://livereload.com/) application, which monitors files for changes and reloads your web browser.
 
 # Example Usage
