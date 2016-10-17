@@ -165,6 +165,30 @@ The first are some configuration options, passed as a JavaScript object:
 
 The second argument is an optional `callback` that will be sent to the LiveReload server and called for the `listening` event. (ie: when the server is ready to start accepting connections)
 
+# Changelog
+
+### 0.6.0
+* Implements LiveReload protocol v7 so browser plugins work again. 
+* Removes support for protocol v6
+* Introduces `noListen` option
+* Introduces optional callback which will be invoked when the LiveReload server is listening
+
+### 0.5.0
+* Updated `ws` library
+* Fix issues with exclusions
+* Allow watching multiple paths from CLI
+* Added `delay` option
+
+### 0.4.1
+* Remove some bad JS code
+*
+### 0.4.0
+* Rewritten using Chokidar library and `ws` library
+* Added `usePolling` option
+* Added support for specifying additional extensions from the CLI
+
+Older version history not kept.
+
 # License
 
 Copyright (c) 2010-2016 Brian P. Hogan and Joshua Peek
