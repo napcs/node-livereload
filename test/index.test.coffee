@@ -28,8 +28,29 @@ describe 'livereload http file serving', ->
     server = livereload.createServer({port: 35729})
 
     ws = new WebSocket('ws://localhost:35729/livereload')
+
+    ws.on 'open', () ->
+      data = JSON.stringify {
+        command: 'hello',
+        protocols: [
+            'http://livereload.com/protocols/official-7',
+            'http://livereload.com/protocols/official-8',
+            'http://livereload.com/protocols/2.x-origin-version-negotiation']
+        }
+      ws.send data
     ws.on 'message', (data, flags) ->
-      data.should.equal '!!ver:1.6'
+      console.log "hello"
+
+      data.should.equal JSON.stringify {
+          command: 'hello',
+          protocols: [
+              'http://livereload.com/protocols/official-7',
+              'http://livereload.com/protocols/official-8',
+              'http://livereload.com/protocols/official-9',
+              'http://livereload.com/protocols/2.x-origin-version-negotiation',
+              'http://livereload.com/protocols/2.x-remote-control'],
+          serverName: 'node-livereload'
+      }
 
       server.config.server.close()
 

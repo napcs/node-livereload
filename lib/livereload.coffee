@@ -6,7 +6,7 @@ https = require 'https'
 url = require 'url'
 chokidar = require 'chokidar'
 
-protocol_version = '1.6'
+protocol_version = '7'
 defaultPort = 35729
 
 defaultExts = [
@@ -29,9 +29,7 @@ class Server
     @config.exts       = @config.exts.concat defaultExts
     @config.exclusions = @config.exclusions.concat defaultExclusions
 
-    @config.applyJSLive  ?= false
     @config.applyCSSLive ?= true
-    @config.applyImgLive ?= true
 
     @config.originalPath ?= ''
     @config.overrideURL ?= ''
@@ -55,20 +53,44 @@ class Server
   onConnection: (socket) ->
     @debug "Browser connected."
 
-    socket.send "!!ver:#{@config.version}"
-
+    # Client sends various messages under the key 'command'
+    #
+    # 'hello': the handshake. Must reply with 'hello'
+    # 'info' : info about the client script and any plugins it has enabled
+    #
+    # TODO: handle info messages
     socket.on 'message', (message) =>
-      if (@config.debug)
-        @debug "Browser URL: #{message}"
+      @debug "Client message: #{message}"
 
-    # FIXME: This doesn't seem to be firing either.
+      request = JSON.parse(message)
+
+      if request.command == "hello"
+        @debug "Client requested handshake..."
+        @debug "Handshaking with client using protocol #{@config.version}..."
+
+        data = JSON.stringify {
+          command: 'hello',
+          protocols: [
+              'http://livereload.com/protocols/official-7',
+              'http://livereload.com/protocols/official-8',
+              'http://livereload.com/protocols/official-9',
+              'http://livereload.com/protocols/2.x-origin-version-negotiation',
+              'http://livereload.com/protocols/2.x-remote-control'],
+          serverName: 'node-livereload'
+        }
+
+        socket.send data
+
+    # handle error events from socket
     socket.on 'error', (err) =>
       @debug "Error in client socket: #{err}"
 
+    socket.on 'close', (message) =>
+      @debug "Client closed connection"
 
-  # FIXME: This does not seem to be firing
+
   onClose: (socket) ->
-    @debug "Browser disconnected."
+    @debug "Socket closed."
 
   watch: (paths) ->
     @watcher = chokidar.watch(paths,
@@ -100,14 +122,14 @@ class Server
 
   refresh: (filepath) ->
     @debug "Refresh: #{filepath}"
-    data = JSON.stringify ['refresh',
+    data = JSON.stringify {
+      command: 'reload',
       path: filepath,
-      apply_js_live: @config.applyJSLive,
-      apply_css_live: @config.applyCSSLive,
-      apply_img_live: @config.applyImgLive,
-      original_path: this.config.originalPath,
-      override_url: this.config.overrideURL
-    ]
+      liveCSS: @config.applyCSSLive
+      liveImg: @config.applyImgLive,
+      originalPath: this.config.originalPath,
+      overrideURL: this.config.overrideURL
+    }
 
     for socket in @server.clients
       socket.send data, (error) =>
