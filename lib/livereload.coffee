@@ -130,7 +130,9 @@ class Server
       originalPath: this.config.originalPath,
       overrideURL: this.config.overrideURL
     }
+    @sendAllClients data
 
+  sendAllClients: (data) ->
     for socket in @server.clients
       socket.send data, (error) =>
         if error
