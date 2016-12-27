@@ -132,6 +132,14 @@ class Server
     }
     @sendAllClients data
 
+  alert: (message) ->
+    @debug "Alert: #{message}"
+    data = JSON.stringify {
+      command: 'alert',
+      message: message
+    }
+    @sendAllClients data
+
   sendAllClients: (data) ->
     for socket in @server.clients
       socket.send data, (error) =>
