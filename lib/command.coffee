@@ -26,7 +26,7 @@ runner = ->
     {
       short: "x"
       long: "exclusions"
-      description: "Exclude files by specifying an array of regular expressions. Will be appended to default value which is [/\\.git\//, /\\.svn\//, /\\.hg\//]",
+      description: "Exclude files by specifying an array of regular expressions. Will be appended to default value which is [/\.git\//, /\.svn\//, /\.hg\//]",
       required: false,
       value: true
     }
@@ -62,7 +62,7 @@ runner = ->
 
   port = opts.get('port') || 35729
   exclusions = if opts.get('exclusions') then opts.get('exclusions' ).split(',' ).map((s) -> new RegExp(s)) else []
-  exts = (opts.get('exts') || '').split ' '
+  exts = if opts.get('exts') then opts.get('exts').split(',') else []
   usePolling = opts.get('usepolling') || false
   wait = opts.get('wait') || 0;
 

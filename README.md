@@ -134,7 +134,8 @@ The commandline options are
 
 * `-p` or `--port` to specify the listening port
 * `-d` or `--debug` to show debug messages when the browser reloads.
-* `-e` or `--exts` to include additional extentions that you want to observe. An example being -e 'jade scss'.
+* `-e` or `--exts` to include additional extentions that you want to observe. Example: ` -e 'jade,scss'`.
+* `-x` or `--exclusions` to specify additional exclusion patterns. Example: `-x html, images/`
 * `-u` or `--usepolling` to poll for file system changes. Set this to true to successfully watch files over a network.
 * `-w` or `--wait` to add a delay (in miliseconds) between when livereload detects a change to the filesystem and when it notifies the browser
 
@@ -153,7 +154,7 @@ The first are some configuration options, passed as a JavaScript object:
 
 * `https` is an optional object of options to be passed to [https.createServer](http://nodejs.org/api/https.html#https_https_createserver_options_requestlistener) (if not provided, `http.createServer` is used instead)
 * `port` is the listening port. It defaults to `35729` which is what the LiveReload extensions use currently.
-* `exts` is an array of extensions you want to observe. The default extensions are  `html`, `css`, `js`, `png`, `gif`, `jpg`, `php`, `php5`, `py`, `rb`,  `erb`, and "coffee."
+* `exts` is an array of extensions you want to observe. The default extensions are  `html`, `css`, `js`, `png`, `gif`, `jpg`, `php`, `php5`, `py`, `rb`,  `erb`, and `coffee`.
 * `applyCSSLive` tells LiveReload to reload CSS files in the background instead of refreshing the page. The default for this is `true`.
 * `applyImgLive` tells LiveReload to reload image files in the background instead of refreshing the page. The default for this is `true`. Namely for these extensions: jpg, jpeg, png, gif
 * `exclusions` lets you specify files to ignore. By default, this includes `.git/`, `.svn/`, and `.hg/`
@@ -166,6 +167,15 @@ The first are some configuration options, passed as a JavaScript object:
 The second argument is an optional `callback` that will be sent to the LiveReload server and called for the `listening` event. (ie: when the server is ready to start accepting connections)
 
 # Changelog
+
+### 0.6.2
+* CLI now properly splits extension list. Previous versions appended a blank entry to the list of extensions.
+* CLI now requires extensions to  be comma separated instead of space separated.
+* Added extra debugging info (protocol version, watched directory, extensions, and exclusions).
+* Cleaned up some inconsistencies in the code.
+
+### 0.6.1
+* Fix default exclusions regex
 
 ### 0.6.0
 * Implements LiveReload protocol v7 so browser plugins work again. 

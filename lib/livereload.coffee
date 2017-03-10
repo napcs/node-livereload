@@ -38,6 +38,13 @@ class Server
 
   listen: (callback) ->
     @debug "LiveReload is waiting for browser to connect."
+    @debug """
+      Protocol version: #{@config.version}
+      Exclusions: #{@config.exclusions}
+      Extensions: #{@config.exts}
+      Polling: #{@config.usePolling}
+
+    """
 
     if @config.server
       @config.server.listen @config.port
@@ -93,6 +100,7 @@ class Server
     @debug "Socket closed."
 
   watch: (paths) ->
+    @debug "Watching #{paths}..."
     @watcher = chokidar.watch(paths,
       ignoreInitial: true
       ignored: @config.exclusions
@@ -121,11 +129,11 @@ class Server
         @refresh filepath
 
   refresh: (filepath) ->
-    @debug "Refresh: #{filepath}"
+    @debug "Reloading: #{filepath}"
     data = JSON.stringify {
       command: 'reload',
       path: filepath,
-      liveCSS: @config.applyCSSLive
+      liveCSS: @config.applyCSSLive,
       liveImg: @config.applyImgLive,
       originalPath: this.config.originalPath,
       overrideURL: this.config.overrideURL
