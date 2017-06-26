@@ -1,13 +1,14 @@
-var liveReload = require('./lib/livereload');
+const LiveReload = require('../lib/livereload');
 
-const ary = [
-    'md',
-    'text'
+const extensionsToWatch = [
+  'md',
+  'text'
 ];
 
-const liveReloadServer = liveReload.createServer({
-	port: 35729,
+const liveReloadServer = LiveReload.createServer({
+  port: 35729,
   debug: true,
-        exts: ary
-}).watch(__dirname);
+  exts: extensionsToWatch
+});
 
+liveReloadServer.watch(__dirname);
