@@ -23,10 +23,11 @@ class Server
     @config.version ?= protocol_version
     @config.port    ?= defaultPort
 
-    @config.exts       ?= []
-    @config.exclusions ?= []
+    @config.exts            ?= []
+    @config.observeOnlyExts ?= []
+    @config.exclusions      ?= []
 
-    @config.exts       = @config.exts.concat defaultExts
+    @config.exts       = if @config.observeOnlyExts.length > 0 then @config.observeOnlyExts else @config.exts.concat defaultExts
     @config.exclusions = @config.exclusions.concat defaultExclusions
 
     @config.applyCSSLive ?= true

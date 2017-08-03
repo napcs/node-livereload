@@ -45,6 +45,13 @@ runner = ->
       value: true
     }
     {
+      short: "o"
+      long: "observeonly",
+      description: "An array of extensions you want to observe. An example 'jade, scss' (quotes are required). Without the defaults (html, css, js, png, gif, jpg, php, php5, py, rb, erb, and \"coffee.\").",
+      required: false,
+      value: true
+    }
+    {
       short: "u"
       long: "usepolling"
       description: "Poll for file system changes. Set this to true to successfully watch files over a network.",
@@ -63,6 +70,7 @@ runner = ->
   port = opts.get('port') || 35729
   exclusions = if opts.get('exclusions') then opts.get('exclusions' ).split(',' ).map((s) -> new RegExp(s)) else []
   exts = if opts.get('exts') then opts.get('exts').split(',') else []
+  observeOnlyExts = if opts.get('observeonly') then opts.get('observeonly').split(',') else []
   usePolling = opts.get('usepolling') || false
   wait = opts.get('wait') || 0;
 
@@ -70,7 +78,8 @@ runner = ->
     port: port
     debug: debug
     exclusions: exclusions,
-    exts: exts
+    exts: exts,
+    observeOnlyExts: observeOnlyExts,
     usePolling: usePolling
     delay: wait
   })
