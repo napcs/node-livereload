@@ -159,7 +159,8 @@ class Server
       console.log "#{str}\n"
 
   close: ->
-    @watcher.close()
+    if @watcher
+      @watcher.close()
     # ensure ws server is closed
     @server._server.close()
     @server.close()
