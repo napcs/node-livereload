@@ -50,10 +50,11 @@ describe 'livereload http file serving', ->
               'http://livereload.com/protocols/2.x-origin-version-negotiation',
               'http://livereload.com/protocols/2.x-remote-control'],
           serverName: 'node-livereload'
+
       }
 
       server.config.server.close()
-
+      ws.close()
       done()
 
   it 'should allow you to override the internal http server', (done) ->
