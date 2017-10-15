@@ -135,7 +135,7 @@ The commandline options are
 * `-p` or `--port` to specify the listening port
 * `-d` or `--debug` to show debug messages when the browser reloads.
 * `-e` or `--exts` to include additional extentions that you want to observe. Example: ` -e 'jade,scss'`.
-* `-x` or `--exclusions` to specify additional exclusion patterns. Example: `-x html, images/`
+* `-x` or `--exclusions` to specify additional exclusion patterns. Example: `-x html,images/` [Note: spaces between commas will break multiple exclusions](https://github.com/napcs/node-livereload/issues/46#issuecomment-285417701).
 * `-u` or `--usepolling` to poll for file system changes. Set this to true to successfully watch files over a network.
 * `-w` or `--wait` to add a delay (in miliseconds) between when livereload detects a change to the filesystem and when it notifies the browser
 
