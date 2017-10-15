@@ -40,7 +40,7 @@ runner = ->
     {
       short: "e"
       long: "exts",
-      description: "An array of extensions you want to observe. An example 'jade scss' (quotes are required). In addition to the defaults (html, css, js, png, gif, jpg, php, php5, py, rb, erb, and \"coffee.\").",
+      description: "A comma-separated list of extensions you wish to watch in addition to the defaults (html, css, js, png, gif, jpg, php, php5, py, rb, erb, coffee).",
       required: false,
       value: true
     }
@@ -62,7 +62,7 @@ runner = ->
 
   port = opts.get('port') || 35729
   exclusions = if opts.get('exclusions') then opts.get('exclusions' ).split(',' ).map((s) -> new RegExp(s)) else []
-  exts = if opts.get('exts') then opts.get('exts').split(',') else []
+  exts = if opts.get('exts') then opts.get('exts').split(',').map((ext) -> ext.trim()) else  []
   usePolling = opts.get('usepolling') || false
   wait = opts.get('wait') || 0;
 
