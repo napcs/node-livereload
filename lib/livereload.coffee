@@ -26,6 +26,10 @@ class Server
     @config.exts       ?= []
     @config.exclusions ?= []
 
+    if @config.exts.length > 0
+      console.log "\x1b[31m%s\x1b[0m", "*** DEPRECATION WARNING *** The exts option will REPLACE extensions in 0.6.4. ***"
+
+    # TODO: change to replace config instead of concat.
     @config.exts       = @config.exts.concat defaultExts
     @config.exclusions = @config.exclusions.concat defaultExclusions
 
