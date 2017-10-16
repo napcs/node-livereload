@@ -168,6 +168,12 @@ The second argument is an optional `callback` that will be sent to the LiveReloa
 
 # Changelog
 
+### 0.6.3
+* Updated to use Chokidar 1.7, which hopefully fixes some memory issues.
+* BUGFIX: Check to see if a `watcher` object is actually defined before attempting to close.
+* Added deprecation warning for `exts` option. In the next version, extensions you specify on the command line will OVERRIDE the default extensions. We'll add a new option for adding your exts to the defaults.
+* Modified CLI so it trims spaces from the extensions in the array, just in case you put spaces between the commas.
+
 ### 0.6.2
 * CLI now properly splits extension list. Previous versions appended a blank entry to the list of extensions.
 * CLI now requires extensions to  be comma separated instead of space separated.
