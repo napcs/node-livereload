@@ -102,6 +102,28 @@ describe 'livereload http file serving', ->
       server.config.server.close()
       done()
 
+describe 'livereload server', ->
+  server = undefined
+  new_server = undefined
+  beforeEach (done) ->
+    server = livereload.createServer {port: 35729, debug: true}
+    setTimeout(done, 2000)
+
+  afterEach (done) ->
+    server.close()
+    new_server.close()
+    server = undefined
+    new_server = undefined
+    done()
+
+  it 'should gracefully handle something running on the same port', (done) ->
+    new_server = livereload.createServer({debug: true, port: 35729})
+    new_server.on 'error', (err) ->
+      err.code.should.be("EADDRINUSE")
+
+    done()
+
+
 describe 'livereload file watching', ->
   describe "config.delay", ->
     tmpFile = tmpFile2 = clock = server = refresh = undefined

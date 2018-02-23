@@ -5,6 +5,7 @@ http  = require 'http'
 https = require 'https'
 url = require 'url'
 chokidar = require 'chokidar'
+EventEmitter = require('events')
 
 protocol_version = '7'
 defaultPort = 35729
@@ -16,7 +17,7 @@ defaultExts = [
 
 defaultExclusions = [/\.git\//, /\.svn\//, /\.hg\//]
 
-class Server
+class Server extends EventEmitter
   constructor: (@config) ->
     @config ?= {}
 
@@ -58,8 +59,16 @@ class Server
 
     @server.on 'connection', @onConnection.bind @
     @server.on 'close',      @onClose.bind @
+    @server.on 'error',      @onError.bind @
+
     if callback
       @server.once 'listening', callback
+
+  # Bubble up the connection error to the parent process
+  # Subscribe with server.on "error"
+  onError: (err) ->
+      @debug "Error #{err}"
+      @emit "error", err
 
   onConnection: (socket) ->
     @debug "Browser connected."
@@ -113,7 +122,6 @@ class Server
     .on 'add', @filterRefresh.bind(@)
     .on 'change', @filterRefresh.bind(@)
     .on 'unlink', @filterRefresh.bind(@)
-
 
   filterRefresh: (filepath) ->
     exts = @config.exts
@@ -182,6 +190,7 @@ exports.createServer = (config = {}, callback) ->
   config.server ?= app
 
   server = new Server config
+
   unless config.noListen
     server.listen(callback)
   server

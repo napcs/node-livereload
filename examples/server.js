@@ -11,4 +11,14 @@ const liveReloadServer = LiveReload.createServer({
   exts: extensionsToWatch
 });
 
+// Listen for errors
+/*
+liveReloadServer.on('error', (err) => {
+  if(err.code == "EADDRINUSE") {
+    console.log("The port LiveReload wants to use is used by something else.");
+    process.exit(1);
+  }
+});
+*/
+
 liveReloadServer.watch(__dirname);
