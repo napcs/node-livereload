@@ -40,7 +40,14 @@ runner = ->
     {
       short: "e"
       long: "exts",
-      description: "A comma-separated list of extensions you wish to watch in addition to the defaults (html, css, js, png, gif, jpg, php, php5, py, rb, erb, coffee).",
+      description: "A comma-separated list of extensions you wish to watch. Replaces default extentions",
+      required: false,
+      value: true
+    }
+    {
+      short: "ee"
+      long: "extraExts",
+      description: "A comma-separated list of extensions you wish to watch in addition to the defaults (html, css, js, png, gif, jpg, php, php5, py, rb, erb, coffee). If used with --exts, this overrides --exts.",
       required: false,
       value: true
     }
@@ -63,6 +70,7 @@ runner = ->
   port = opts.get('port') || 35729
   exclusions = if opts.get('exclusions') then opts.get('exclusions' ).split(',' ).map((s) -> new RegExp(s)) else []
   exts = if opts.get('exts') then opts.get('exts').split(',').map((ext) -> ext.trim()) else  []
+  extraExts = if opts.get('extraExts') then opts.get('extraExts').split(',').map((ext) -> ext.trim()) else  []
   usePolling = opts.get('usepolling') || false
   wait = opts.get('wait') || 0;
 
@@ -71,6 +79,7 @@ runner = ->
     debug: debug
     exclusions: exclusions,
     exts: exts
+    extraExts: extraExts
     usePolling: usePolling
     delay: wait
   })

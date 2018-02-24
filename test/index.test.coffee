@@ -8,6 +8,41 @@ path = require 'path'
 WebSocket = require 'ws'
 sinon = require 'sinon'
 
+describe 'livereload config', ->
+
+  it 'should remove default exts when provided new exts', (done) ->
+    server = livereload.createServer({ port: 35729, exts: ["html"]}, ->
+      server.close()
+      done()
+    )
+    server.config.exts.should.eql(["html"])
+
+  it 'should incldue default exts when provided extraExts', (done) ->
+    server = livereload.createServer({ port: 35729, extraExts: ["foobar"]}, ->
+      server.close()
+      done()
+    )
+
+    extensionsList = [
+      'foobar',
+      'html', 'css', 'js', 'png', 'gif', 'jpg',
+      'php', 'php5', 'py', 'rb', 'erb', 'coffee'
+    ]
+    server.config.exts.should.eql(extensionsList)
+
+  it 'extraExts must override exts if both are given', (done) ->
+    server = livereload.createServer({ port: 35729, exts: ["md"], extraExts: ["foobar"]}, ->
+      server.close()
+      done()
+    )
+
+    extensionsList = [
+      'foobar',
+      'html', 'css', 'js', 'png', 'gif', 'jpg',
+      'php', 'php5', 'py', 'rb', 'erb', 'coffee'
+    ]
+    server.config.exts.should.eql(extensionsList)
+
 describe 'livereload http file serving', ->
 
   it 'should serve up livereload.js', (done) ->
@@ -102,7 +137,7 @@ describe 'livereload http file serving', ->
       server.config.server.close()
       done()
 
-describe 'livereload server', ->
+describe 'livereload server startup', ->
   server = undefined
   new_server = undefined
   beforeEach (done) ->
@@ -194,9 +229,6 @@ describe 'livereload file watching', ->
           done()
         , 500)
 
-
-  it 'should correctly watch common files', ->
-    # TODO check it watches default exts
 
   it 'should correctly ignore common exclusions', ->
     # TODO check it ignores common exclusions

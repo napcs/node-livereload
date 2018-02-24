@@ -25,13 +25,15 @@ class Server extends EventEmitter
     @config.port    ?= defaultPort
 
     @config.exts       ?= []
+    @config.extraExts  ?= []
     @config.exclusions ?= []
 
-    if @config.exts.length > 0
-      console.log "\x1b[31m%s\x1b[0m", "*** DEPRECATION WARNING *** The exts option will REPLACE extensions in 0.6.4. ***"
+    if @config.exts.length == 0
+      @config.exts = defaultExts
 
-    # TODO: change to replace config instead of concat.
-    @config.exts       = @config.exts.concat defaultExts
+    if @config.extraExts.length > 0
+      @config.exts = @config.extraExts.concat defaultExts
+
     @config.exclusions = @config.exclusions.concat defaultExclusions
 
     @config.applyCSSLive ?= true
@@ -42,7 +44,7 @@ class Server extends EventEmitter
     @config.usePolling ?= false
 
   listen: (callback) ->
-    @debug "LiveReload is waiting for browser to connect."
+    @debug "LiveReload is waiting for a browser to connect..."
     @debug """
       Protocol version: #{@config.version}
       Exclusions: #{@config.exclusions}
