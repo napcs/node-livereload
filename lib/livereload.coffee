@@ -17,7 +17,7 @@ defaultExts = [
 
 defaultExclusions = [/\.git\//, /\.svn\//, /\.hg\//]
 
-clientScriptPath = path.join __dirname, '/../ext/livereload.js'
+clientScriptPath = path.join __dirname, '../ext/livereload.js'
 
 class Server extends EventEmitter
   constructor: (@config) ->
