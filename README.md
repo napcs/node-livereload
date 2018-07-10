@@ -108,7 +108,7 @@ You can then start up the server which will listen on port `3000`.
 
 ### Server API
 
-The `createServer()` method accepts two arguments. 
+The `createServer()` method accepts two arguments.
 
 The first are some configuration options, passed as a JavaScript object:
 
@@ -121,6 +121,7 @@ The first are some configuration options, passed as a JavaScript object:
 * `exclusions` lets you specify files to ignore. By default, this includes `.git/`, `.svn/`, and `.hg/`
 * `originalPath` Set URL you use for development, e.g 'http:/domain.com', then LiveReload will proxy this url to local path.
 * `overrideURL` lets you specify a different host for CSS files. This lets you edit local CSS files but view a live site. See <http://feedback.livereload.com/knowledgebase/articles/86220-preview-css-changes-against-a-live-site-then-uplo> for details.
+* `socketPath` is the path for the notification server to which the client connects. The default is `/livereload`. If you change this to `/X`, you must also set `window.LiveReloadOptions = {host: location.hostname, path: 'X'}`.
 * `usePolling` Poll for file system changes. Set this to `true` to successfully watch files over a network.
 * `delay` add a delay (in miliseconds) between when livereload detects a change to the filesystem and when it notifies the browser. Useful if the browser is reloading/refreshing before a file has been compiled, for example, by browserify.
 * `noListen` Pass as `true` to indicate that the websocket server should not be started automatically. (useful if you want to start it yourself later)
@@ -172,10 +173,17 @@ When `/User/Workspace/test/css/style.css` is modified, the stylesheet will be re
 
 # Changelog
 
+### 0.7.1
+The websocket server no longer intercepts all websocket connections, just the ones on `/livereload` (`options.socketPath`). This allows to use the same server instance / port for LiveReload and another websocket server.
+
+Minor improvements:
+  * now uses async IO to serve the client script
+  * `server.watch` is now idempotent
+
 ### 0.7.0
 * Updates bundled Livereload.js file to v2.3.0 to fix console error.
 * BREAKING CHANGE: The `exts` and `e` options now **replace** the default extensions.
-* Adds the `extraExts` and `ee` options to preserve the old behavior of adding extensions to watch. 
+* Adds the `extraExts` and `ee` options to preserve the old behavior of adding extensions to watch.
 * You can now use `server.on 'error'` in your code to catch the "port in use" message gracefully. The CLI now handles this nicely as well.
 
 ### 0.6.3
@@ -194,7 +202,7 @@ When `/User/Workspace/test/css/style.css` is modified, the stylesheet will be re
 * Fix default exclusions regex
 
 ### 0.6.0
-* Implements LiveReload protocol v7 so browser plugins work again. 
+* Implements LiveReload protocol v7 so browser plugins work again.
 * Removes support for protocol v6
 * Introduces `noListen` option
 * Introduces optional callback which will be invoked when the LiveReload server is listening
@@ -207,7 +215,7 @@ When `/User/Workspace/test/css/style.css` is modified, the stylesheet will be re
 
 ### 0.4.1
 * Remove some bad JS code
-  *
+
 ### 0.4.0
 * Rewritten using Chokidar library and `ws` library
 * Added `usePolling` option

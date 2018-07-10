@@ -17,6 +17,8 @@ defaultExts = [
 
 defaultExclusions = [/\.git\//, /\.svn\//, /\.hg\//]
 
+clientScriptPath = path.join __dirname, '../ext/livereload.js'
+
 class Server extends EventEmitter
   constructor: (@config) ->
     @config ?= {}
@@ -40,6 +42,7 @@ class Server extends EventEmitter
 
     @config.originalPath ?= ''
     @config.overrideURL ?= ''
+    @config.socketPath ?= '/livereload'
 
     @config.usePolling ?= false
 
@@ -55,9 +58,15 @@ class Server extends EventEmitter
 
     if @config.server
       @config.server.listen @config.port
-      @server = new ws.Server({server: @config.server})
+      @server = new ws.Server({
+        server: @config.server
+        path: @config.socketPath
+      })
     else
-      @server = new ws.Server({port: @config.port})
+      @server = new ws.Server({
+        port: @config.port
+        path: @config.socketPath
+      })
 
     @server.on 'connection', @onConnection.bind @
     @server.on 'close',      @onClose.bind @
@@ -116,6 +125,8 @@ class Server extends EventEmitter
 
   watch: (paths) ->
     @debug "Watching #{paths}..."
+    if @watcher
+      @watcher.close()
     @watcher = chokidar.watch(paths,
       ignoreInitial: true
       ignored: @config.exclusions
@@ -180,16 +191,17 @@ class Server extends EventEmitter
     @server.close()
 
 exports.createServer = (config = {}, callback) ->
-  requestHandler = ( req, res )->
-    if url.parse(req.url).pathname is '/livereload.js'
-      res.writeHead(200, {'Content-Type': 'text/javascript'})
-      res.end fs.readFileSync __dirname + '/../ext/livereload.js'
-  if !config.https?
-    app = http.createServer requestHandler
-  else
-    app = https.createServer config.https, requestHandler
+  unless config.server
+    requestHandler = (req, res) ->
+      if url.parse(req.url).pathname is '/livereload.js'
+        res.writeHead(200, {'Content-Type': 'text/javascript'})
+        fs.createReadStream(clientScriptPath).pipe res
 
-  config.server ?= app
+    config.server =
+      if config.https?
+        https.createServer config.https, requestHandler
+      else
+        http.createServer requestHandler
 
   server = new Server config
 
