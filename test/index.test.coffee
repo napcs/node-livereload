@@ -154,7 +154,7 @@ describe 'livereload server startup', ->
   it 'should gracefully handle something running on the same port', (done) ->
     new_server = livereload.createServer({debug: true, port: 35729})
     new_server.on 'error', (err) ->
-      err.code.should.be("EADDRINUSE")
+      err.code.should.be.equal("EADDRINUSE")
 
     done()
 
