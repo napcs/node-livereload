@@ -217,6 +217,6 @@ Older version history not kept.
 
 # License
 
-Copyright (c) 2010-2018 Brian P. Hogan and Joshua Peek
+Copyright (c) 2010-2019 Brian P. Hogan and Joshua Peek
 
 Released under the MIT license. See `LICENSE` for details.
