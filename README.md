@@ -172,6 +172,10 @@ When `/User/Workspace/test/css/style.css` is modified, the stylesheet will be re
 
 # Changelog
 
+### 0.8.0
+* Update bundled Livereload.js file to v3.0.0
+* Update deps to close security vulnerabilities
+
 ### 0.7.0
 * Updates bundled Livereload.js file to v2.3.0 to fix console error.
 * BREAKING CHANGE: The `exts` and `e` options now **replace** the default extensions.
@@ -217,6 +221,6 @@ Older version history not kept.
 
 # License
 
-Copyright (c) 2010-2018 Brian P. Hogan and Joshua Peek
+Copyright (c) 2010-2019 Brian P. Hogan and Joshua Peek
 
 Released under the MIT license. See `LICENSE` for details.
