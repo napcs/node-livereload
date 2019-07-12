@@ -118,6 +118,7 @@ The first are some configuration options, passed as a JavaScript object:
 * `extraExts` is an array of extensions you want to observe. The default extensions are `[`html`, `css`, `js`, `png`, `gif`, `jpg`, `php`, `php5`, `py`, `rb`,  `erb`, `coffee`]`.
 * `applyCSSLive` tells LiveReload to reload CSS files in the background instead of refreshing the page. The default for this is `true`.
 * `applyImgLive` tells LiveReload to reload image files in the background instead of refreshing the page. The default for this is `true`. Namely for these extensions: jpg, jpeg, png, gif
+* `applyScriptLive` tells LiveReload to reload script files in the background instead of refreshing the page. The default for this is `false`. Namely for these extensions: js
 * `exclusions` lets you specify files to ignore. By default, this includes `.git/`, `.svn/`, and `.hg/`
 * `originalPath` Set URL you use for development, e.g 'http:/domain.com', then LiveReload will proxy this url to local path.
 * `overrideURL` lets you specify a different host for CSS files. This lets you edit local CSS files but view a live site. See <http://feedback.livereload.com/knowledgebase/articles/86220-preview-css-changes-against-a-live-site-then-uplo> for details.

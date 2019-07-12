@@ -1089,6 +1089,7 @@ class LiveReload {
     return this.reloader.reload(message.path, {
       liveCSS: message.liveCSS != null ? message.liveCSS : true,
       liveImg: message.liveImg != null ? message.liveImg : true,
+      liveScript: message.liveScript != null ? message.liveScript : false,
       reloadMissingCSS: message.reloadMissingCSS != null ? message.reloadMissingCSS : true,
       originalPath: message.originalPath || '',
       overrideURL: message.overrideURL || '',
@@ -1506,6 +1507,11 @@ class Reloader {
       return;
     }
 
+    if (options.liveScript && path.match(/\.(js)$/i)) {
+      this.reloadScripts(path);
+      return;
+    }
+
     if (options.isChromeExtension) {
       this.reloadChromeExtension();
       return;
@@ -1597,6 +1603,22 @@ class Reloader {
         if (newValue !== value) {
           style[styleName] = newValue;
         }
+      }
+    }
+  }
+
+  reloadScripts(path) {
+    let script;
+    const expando = this.generateUniqueString();
+
+    for (script of Array.from(this.document.scripts)) {
+      var src = script.src;
+      if (pathsMatch(path, pathFromUrl(src))) {
+        script.parentElement.removeChild(script);
+        var head = document.getElementsByTagName('head')[0];
+        script = document.createElement('script');
+        script.src = this.generateCacheBustUrl(src, expando);;
+        head.appendChild(script);
       }
     }
   }

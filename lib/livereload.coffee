@@ -149,6 +149,7 @@ class Server extends EventEmitter
       path: filepath,
       liveCSS: @config.applyCSSLive,
       liveImg: @config.applyImgLive,
+      liveScript: @config.applyScriptLive,
       originalPath: this.config.originalPath,
       overrideURL: this.config.overrideURL
     }
