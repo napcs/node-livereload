@@ -172,6 +172,9 @@ When `/User/Workspace/test/css/style.css` is modified, the stylesheet will be re
 
 # Changelog
 
+### 0.8.1
+* Update `ws` dependency to v6.2.1 to close security vulnerability
+
 ### 0.8.0
 * Update bundled Livereload.js file to v3.0.0
 * Update deps to close security vulnerabilities
