@@ -164,6 +164,7 @@ class Server extends EventEmitter
 
   sendAllClients: (data) ->
     @server.clients.forEach (socket) =>
+      @debug "broadcasting to all clients: #{data}"
       socket.send data, (error) =>
         if error
           @debug error
