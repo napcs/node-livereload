@@ -80,7 +80,6 @@ class Server extends EventEmitter
     # 'hello': the handshake. Must reply with 'hello'
     # 'info' : info about the client script and any plugins it has enabled
     #
-    # TODO: handle info messages
     socket.on 'message', (message) =>
       @debug "Client message: #{message}"
 
@@ -102,6 +101,13 @@ class Server extends EventEmitter
         }
 
         socket.send data
+
+      # info messages are messages about the features the client server has, like
+      # plugins. We don't support these but in debug mode we should at least
+      # acknowledge them in the console for debugging purposes
+      if request.command == "info"
+        @debug "Server received client data. Not sending response."
+
 
     # handle error events from socket
     socket.on 'error', (err) =>
