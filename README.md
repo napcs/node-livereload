@@ -172,6 +172,11 @@ When `/User/Workspace/test/css/style.css` is modified, the stylesheet will be re
 
 # Changelog
 
+### 0.8.2 
+* Fix regression in 0.8.1 where broadcasting failed due to incompatibility between arrays and sets
+* Add debug message when broadcasting to each socket
+* Add debug message for the `input` message from clients
+
 ### 0.8.1
 * Update `ws` dependency to v6.2.1 to close security vulnerability
 
