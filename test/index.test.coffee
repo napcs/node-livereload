@@ -48,7 +48,7 @@ describe 'livereload http file serving', ->
   it 'should serve up livereload.js', (done) ->
     server = livereload.createServer({port: 35729})
 
-    fileContents = fs.readFileSync('./ext/livereload.js').toString()
+    fileContents = fs.readFileSync('./node_modules/livereload-js/dist/livereload.js').toString()
 
     request 'http://localhost:35729/livereload.js?snipver=1', (error, response, body) ->
       should.not.exist error
@@ -116,7 +116,7 @@ describe 'livereload http file serving', ->
         cert: fs.readFileSync path.join __dirname, 'ssl/localhost.cert'
         key: fs.readFileSync path.join __dirname, 'ssl/localhost.key'
 
-    fileContents = fs.readFileSync('./ext/livereload.js').toString()
+    fileContents = fs.readFileSync('./node_modules/livereload-js/dist/livereload.js').toString()
 
     # allow us to use our self-signed cert for testing
     unsafeRequest = request.defaults
