@@ -24,6 +24,7 @@
   "main": "./lib/livereload.js",
   "dependencies": {
     "chokidar": "^2.1.5",
+    "livereload-js": "^3.1.0",
     "opts": ">= 1.2.0",
     "ws": "^6.2.1"
   },
