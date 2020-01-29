@@ -172,6 +172,10 @@ When `/User/Workspace/test/css/style.css` is modified, the stylesheet will be re
 
 # Changelog
 
+### 0.9.0
+* Serve Livereload client library from an NPM dependency instead of copying the code into the project - smhg
+* Update Chokidar to 3.3.0 which improves performance and reduces CPU load.
+
 ### 0.8.2 
 * Fix regression in 0.8.1 where broadcasting failed due to incompatibility between arrays and sets
 * Add debug message when broadcasting to each socket
