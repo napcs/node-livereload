@@ -23,7 +23,7 @@
   },
   "main": "./lib/livereload.js",
   "dependencies": {
-    "chokidar": "^2.1.5",
+    "chokidar": "^3.3.0",
     "livereload-js": "^3.1.0",
     "opts": ">= 1.2.0",
     "ws": "^6.2.1"
@@ -36,7 +36,7 @@
     "sinon": "^1.17.4"
   },
   "engines": {
-    "node": ">=0.4.0"
+    "node": ">=8.0.0"
   },
   "scripts": {
     "test": "cake build && (rm test/tmp*.js; mocha)"
