@@ -108,7 +108,7 @@ You can then start up the server which will listen on port `3000`.
 
 ### Server API
 
-The `createServer()` method accepts two arguments. 
+The `createServer()` method accepts two arguments.
 
 The first are some configuration options, passed as a JavaScript object:
 
@@ -172,11 +172,14 @@ When `/User/Workspace/test/css/style.css` is modified, the stylesheet will be re
 
 # Changelog
 
+### Unreleased
+* Use `require.resolve` to reliably resolve livereload-js location.
+
 ### 0.9.0
 * Serve Livereload client library from an NPM dependency instead of copying the code into the project - smhg
 * Update Chokidar to 3.3.0 which improves performance and reduces CPU load.
 
-### 0.8.2 
+### 0.8.2
 * Fix regression in 0.8.1 where broadcasting failed due to incompatibility between arrays and sets
 * Add debug message when broadcasting to each socket
 * Add debug message for the `input` message from clients
@@ -191,7 +194,7 @@ When `/User/Workspace/test/css/style.css` is modified, the stylesheet will be re
 ### 0.7.0
 * Updates bundled Livereload.js file to v2.3.0 to fix console error.
 * BREAKING CHANGE: The `exts` and `e` options now **replace** the default extensions.
-* Adds the `extraExts` and `ee` options to preserve the old behavior of adding extensions to watch. 
+* Adds the `extraExts` and `ee` options to preserve the old behavior of adding extensions to watch.
 * You can now use `server.on 'error'` in your code to catch the "port in use" message gracefully. The CLI now handles this nicely as well.
 
 ### 0.6.3
@@ -210,7 +213,7 @@ When `/User/Workspace/test/css/style.css` is modified, the stylesheet will be re
 * Fix default exclusions regex
 
 ### 0.6.0
-* Implements LiveReload protocol v7 so browser plugins work again. 
+* Implements LiveReload protocol v7 so browser plugins work again.
 * Removes support for protocol v6
 * Introduces `noListen` option
 * Introduces optional callback which will be invoked when the LiveReload server is listening

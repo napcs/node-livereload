@@ -190,7 +190,7 @@ exports.createServer = (config = {}, callback) ->
   requestHandler = ( req, res )->
     if url.parse(req.url).pathname is '/livereload.js'
       res.writeHead(200, {'Content-Type': 'text/javascript'})
-      res.end fs.readFileSync __dirname + '/../node_modules/livereload-js/dist/livereload.js'
+      res.end fs.readFileSync require.resolve 'livereload-js'
   if !config.https?
     app = http.createServer requestHandler
   else
