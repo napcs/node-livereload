@@ -19,13 +19,12 @@
   "main": "./lib/livereload.js",
   "dependencies": {
     "chokidar": "^3.3.0",
-    "coffeescript": "^2.5.1",
     "livereload-js": "^3.1.0",
     "opts": ">= 1.2.0",
     "ws": "^6.2.1"
   },
   "devDependencies": {
-    "coffee-script": ">= 1.12",
+    "coffee-script": "^1.12",
     "mocha": "^5.2.0",
     "request": ">= 2.9.203",
     "should": "^13.2.1",
