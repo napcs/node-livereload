@@ -41,7 +41,19 @@ To use livereload from the command line:
 
 ```sh
 $ npm install -g livereload
-$ livereload [path]
+$ livereload [path] [options]
+```
+
+To watch files in the current directory for changes and use the default extensions, run this command:
+
+```sh
+$ livereload
+```
+
+To watch files in another directory, specify its path:
+
+```sh
+$ livereload ~/website
 ```
 
 The commandline options are
@@ -54,10 +66,22 @@ The commandline options are
 * `-u` or `--usepolling` to poll for file system changes. Set this to true to successfully watch files over a network.
 * `-w` or `--wait` to add a delay (in miliseconds) between when livereload detects a change to the filesystem and when it notifies the browser.
 
-Specify the path when using the options.
+For example, to use a wait time and turn on debugging so you can see messages in your terminal, execute `livereload` like this:
 
 ```sh
-$ livereload . -w 1000 -d
+$ livereload -w 1000 -d
+```
+
+To turn on debugging and tell Livereload to only look at HTML files in the `public` directory, run it like this:
+
+```sh
+$ livereload public/ -e 'html'
+```
+
+The file path can be at any place in the arguments. For example, you can put it at the end if you wish:
+
+```sh
+$ livereload -e 'html' public/
 ```
 
 
@@ -186,6 +210,11 @@ check all open and closed issues.
 When submitting code, please keep commits small, and do not modify the README file.  Commit both the Coffee and JS files.
 
 # Changelog
+
+### 0.9.2
+* CLI: The file path is no longer fixed to a specific position in the arguments list
+* CLI: You no longer need to specify the file path when using additional arguments
+* CLI: You can use the `-op` or `--originalpath` option with the command line tool instead of writing your own server.
 
 ### 0.9.1
 * Fix issue with livereload.js not resolving properly on some projects (caseywebdev)

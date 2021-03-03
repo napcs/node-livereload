@@ -6,7 +6,14 @@ runner = ->
   opts       = require 'opts'
   debug      = false;
 
-  opts.parse [
+  args = [
+    {
+      name     : 'path'
+      required : false
+    }
+  ]
+
+  options = [
     {
       short: "v"
       long:  "version"
@@ -65,7 +72,13 @@ runner = ->
       required: false
       value: true
     }
-  ].reverse(), true
+  ]
+
+  opts.parse(options.reverse(), args,  true)
+
+  path = opts.arg('path') || '.'
+  path.split(/\s*,\s*/)
+    .map((x)->resolve(x))
 
   port = opts.get('port') || 35729
   exclusions = if opts.get('exclusions') then opts.get('exclusions' ).split(',' ).map((s) -> new RegExp(s)) else []
@@ -84,9 +97,7 @@ runner = ->
     delay: wait
   })
 
-  path = (process.argv[2] || '.')
-    .split(/\s*,\s*/)
-    .map((x)->resolve(x))
+
   console.log "Starting LiveReload v#{version} for #{path} on port #{port}."
 
   server.on 'error', (err) ->
