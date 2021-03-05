@@ -26,35 +26,42 @@ runner = ->
     {
       short: "p"
       long:  "port"
-      description: "Specify the port"
+      description: "Specify the port the server should listen on."
       value: true
       required: false
     }
     {
       short: "x"
       long: "exclusions"
-      description: "Exclude files by specifying an array of regular expressions. Will be appended to default value which is [/\.git\//, /\.svn\//, /\.hg\//]",
+      description: "Exclude files from being watched by specifying an array of regular expressions. Will be appended to default value which is [/\.git\//, /\.svn\//, /\.hg\//]",
       required: false,
       value: true
     }
     {
       short: "d"
       long: "debug"
-      description: "Additional debugging information",
+      description: "See helpful debugging information",
       required: false,
       callback: -> debug = true
     }
     {
       short: "e"
       long: "exts",
-      description: "A comma-separated list of extensions you wish to watch. Replaces default extentions",
+      description: "A comma-separated list of extensions that should trigger a reload when changed. Replaces default extentions",
       required: false,
       value: true
     }
     {
       short: "ee"
       long: "extraExts",
-      description: "A comma-separated list of extensions you wish to watch in addition to the defaults (html, css, js, png, gif, jpg, php, php5, py, rb, erb, coffee). If used with --exts, this overrides --exts.",
+      description: "A comma-separated list of extensions that should trigger a reload when changed, in addition to the defaults (html, css, js, png, gif, jpg, php, php5, py, rb, erb, coffee). If used with --exts, this overrides --exts.",
+      required: false,
+      value: true
+    }
+    {
+      short: "f"
+      long: "filesToReload",
+      description: "A comma-separated list of filenames that should trigger a reload when changed.",
       required: false,
       value: true
     }
@@ -68,8 +75,15 @@ runner = ->
     {
       short: "w"
       long: "wait"
-      description: "delay message of file system changes to browser by `delay` milliseconds"
+      description: "Delay message of file system changes to browser by `delay` milliseconds"
       required: false
+      value: true
+    }
+    {
+      short: "op"
+      long: "originalpath",
+      description: "Set a URL you use for development, e.g 'http:/domain.com', then LiveReload will proxy this url to local path."
+      required: false,
       value: true
     }
   ]
@@ -84,8 +98,10 @@ runner = ->
   exclusions = if opts.get('exclusions') then opts.get('exclusions' ).split(',' ).map((s) -> new RegExp(s)) else []
   exts = if opts.get('exts') then opts.get('exts').split(',').map((ext) -> ext.trim()) else  []
   extraExts = if opts.get('extraExts') then opts.get('extraExts').split(',').map((ext) -> ext.trim()) else  []
+  filesToReload = if opts.get('filesToReload') then opts.get('filesToReload').split(',').map((file) -> file.trim()) else  []
   usePolling = opts.get('usepolling') || false
-  wait = opts.get('wait') || 0;
+  wait = opts.get('wait') || 0
+  originalPath = opts.get('originalPath') || ''
 
   server = livereload.createServer({
     port: port
@@ -94,9 +110,10 @@ runner = ->
     exts: exts
     extraExts: extraExts
     usePolling: usePolling
+    filesToReload: filesToReload
     delay: wait
+    originalPath: originalPath
   })
-
 
   console.log "Starting LiveReload v#{version} for #{path} on port #{port}."
 
