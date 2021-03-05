@@ -17,6 +17,20 @@ defaultExts = [
 
 defaultExclusions = [/\.git\//, /\.svn\//, /\.hg\//]
 
+# Server accepts a Configuration object to configure the server.
+#
+# `version`: The protocol version to use.
+# `port`: the LiveReload listen port
+# `exts`: the extensions to watch. An array of extensions.
+# `extraExts`: extensions in addition to the default extensions
+# `exclusions`: array of regex patterns to exclude. Default is [/\.git\//, /\.svn\//, /\.hg\//]
+# `filesToReload`: array of files that, when changed, should force the browser to reload
+# `applyCSSLive`: should the css apply live? Default is true
+# `originalPath`: the original path. Useful for proxy
+# `usePolling`: Should we use polling instead of a file watcher? defaults to false.
+# `delay`: seconds to wait
+# `debug`: display debug mesages to stdout. Default is false
+#
 class Server extends EventEmitter
   constructor: (@config) ->
     @config ?= {}
@@ -27,6 +41,7 @@ class Server extends EventEmitter
     @config.exts       ?= []
     @config.extraExts  ?= []
     @config.exclusions ?= []
+    @config.filesToReload ?= []
 
     if @config.exts.length == 0
       @config.exts = defaultExts
@@ -131,13 +146,29 @@ class Server extends EventEmitter
     .on 'change', @filterRefresh.bind(@)
     .on 'unlink', @filterRefresh.bind(@)
 
+  # Determine whether or not the file should trigger a reload.
+  # Only reload if the changed file is in the list of extensions,
+  # or if it's in the list of explicit file names.
   filterRefresh: (filepath) ->
-    exts = @config.exts
-    fileext = path.extname filepath
-                  .substring 1
+
+    refresh = false
+    @debug "Saw change to #{filepath}"
+
+    # get just the extension         without the .
+    fileext = path.extname(filepath).substring(1)
+
+    # get the filename from the path
+    filename = path.basename(filepath)
 
     # check if file extension is supposed to be watched
-    if (exts.indexOf(fileext) != -1)
+    if (@config.exts.indexOf(fileext) != -1)
+      refresh = true
+
+    # check to see if the file is explicitly listed
+    if (@config.filesToReload.indexOf(filename) != -1)
+      refresh = true
+
+    if refresh
       if @config.delay
         delayedRefresh = setTimeout(
           =>
