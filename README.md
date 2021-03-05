@@ -65,6 +65,7 @@ The commandline options are
 * `-x` or `--exclusions` to specify additional exclusion patterns. Example: `-x html, images/`.
 * `-u` or `--usepolling` to poll for file system changes. Set this to true to successfully watch files over a network.
 * `-w` or `--wait` to add a delay (in miliseconds) between when livereload detects a change to the filesystem and when it notifies the browser.
+* `-op` or `--originalpath` to set a URL you use for development, e.g 'http:/domain.com', then LiveReload will proxy this url to local path.
 
 For example, to use a wait time and turn on debugging so you can see messages in your terminal, execute `livereload` like this:
 
@@ -84,6 +85,13 @@ The file path can be at any place in the arguments. For example, you can put it 
 $ livereload -e 'html' public/
 ```
 
+Finally, you can tell LiveReload to refresh the browser when specific filenames change. This is useful when there are files that don't have extensions, or when you want to exclude all HTML files except for `index.html` throughout the project. Use the `-f` or `--filesToReload` option:
+
+```sh
+$ livereload -f 'index.html' public/
+```
+
+All changes to `index.html` in any subdirectory will cause LiveReload to send the reload message.
 
 ## Option 2: From within your own project
 
@@ -188,15 +196,27 @@ server.watch('/User/Workspace/test');
 
 Then run the server:
 
-`$ node server.js`
-
+```sh
+$ node server.js
+```
 
 When `/User/Workspace/test/css/style.css` is modified, the stylesheet will be reloaded on the page.
 
+# Troubleshooting
+
+## The browser extension doesn't connect.
+
+If you're using `file:///` urls, make sure the browser extension is configured to access local files.  Alternatively, embed the `livereload.js` script on your page as shown in this README. 
+
+## When I change the HTML page I'm working on, the browser refreshes and tells me the file isn't found.
+
+Your editor is most likely using a swapfile, and when you save, there's a split second where the existing file is deleted from the file system before the swap file is saved in its place. This happens with Vim. You can disable swapfiles in your editor, or you can add a slight delay to Livereload using the `-w` option on the command line.
+
+
+
 # Developing livereload
 
-This library is implemented in CoffeeScript 1.x. It may eventually be converted to JavaScript, but
-because there are many projects that depend on this library, the conversion isn't a priority.
+This library is implemented in CoffeeScript 1.x. It may eventually be converted to JavaScript, but because there are many projects that depend on this library, the conversion isn't a priority.
 
 To build the distributable versions, run `npm run build`.
 
@@ -204,17 +224,24 @@ Run `npm test` to run the test suite.
 
 # Contributing
 
-Contributions welcome, but remember that this library is meant to be small and serve its intended purpose only. Before submitting a pull request, open a new issue to discuss your feature or bug. Please 
-check all open and closed issues.
+Contributions welcome, but remember that this library is meant to be small and serve its intended purpose only. Before submitting a pull request, open a new issue to discuss your feature or bug. Please check all open and closed issues.
 
-When submitting code, please keep commits small, and do not modify the README file.  Commit both the Coffee and JS files.
+When submitting code, please keep commits small, and do not modify the README file. Commit both the Coffee and JS files.
 
 # Changelog
 
 ### 0.9.2
+* Server: Added `filesToReload` option to specify a list of filenames that should trigger the reload, rather than relying on extensions alone.
+* CLI: You can use the `-f` or `--filesToReload` option with the command line tool to specifiy filenames that should trigger a reload.
 * CLI: The file path is no longer fixed to a specific position in the arguments list
 * CLI: You no longer need to specify the file path when using additional arguments
 * CLI: You can use the `-op` or `--originalpath` option with the command line tool instead of writing your own server.
+* CLI: The help screen displays more accurate option descriptions.
+* Tests: Added more specific tests to ensure that refresh is called in various scenarios.
+* Other: Removed `Cakefile` as Cake is no longer needed. Use `npm run tests` and `npm run build` instead.
+* Dependencies: Updated `chokidar` dependency to 3.5.1
+* Dependencies: Updated `livereload-js` dependency to 3.3.1
+* Dependencies: Updated `ws` dependency to 7.4.3
 
 ### 0.9.1
 * Fix issue with livereload.js not resolving properly on some projects (caseywebdev)
@@ -274,7 +301,7 @@ When submitting code, please keep commits small, and do not modify the README fi
 
 ### 0.4.1
 * Remove some bad JS code
-  *
+  
 ### 0.4.0
 * Rewritten using Chokidar library and `ws` library
 * Added `usePolling` option
@@ -284,6 +311,6 @@ Older version history not kept.
 
 # License
 
-Copyright (c) 2010-2019 Brian P. Hogan and Joshua Peek
+Copyright (c) 2010-2021 Brian P. Hogan and Joshua Peek
 
 Released under the MIT license. See `LICENSE` for details.
