@@ -213,23 +213,27 @@ If you're using `file:///` urls, make sure the browser extension is configured t
 Your editor is most likely using a swapfile, and when you save, there's a split second where the existing file is deleted from the file system before the swap file is saved in its place. This happens with Vim. You can disable swapfiles in your editor, or you can add a slight delay to Livereload using the `-w` option on the command line.
 
 
-
-# Developing livereload
-
-This library is implemented in CoffeeScript 1.x. It may eventually be converted to JavaScript, but because there are many projects that depend on this library, the conversion isn't a priority.
-
-To build the distributable versions, run `npm run build`.
-
-Run `npm test` to run the test suite.
-
 # Contributing
 
 Contributions welcome, but remember that this library is meant to be small and serve its intended purpose only. Before submitting a pull request, open a new issue to discuss your feature or bug. Please check all open and closed issues.
 
-When submitting code, please keep commits small, and do not modify the README file. Commit both the Coffee and JS files.
+When submitting code, please keep commits small, and do not modify the README file. 
+
+Before submitting your PR, please run `npm test` to run the test suite, and then run the server locally and manually test changes.
+
+Run the server locally:
+
+```
+node bin/livereload.js
+```
+
+You can use the `index.html` file in the `examples` folder to test things in your browser.
+
 
 # Changelog
 
+### 0.10.0
+* Transpiled to JavaScript. No more CoffeeScript developer dependency. This removes the last trace of the original version and should hopefully make it easier to contribute to the project.
 ### 0.9.2
 * Server: Added `filesToReload` option to specify a list of filenames that should trigger the reload, rather than relying on extensions alone.
 * CLI: You can use the `-f` or `--filesToReload` option with the command line tool to specifiy filenames that should trigger a reload.
