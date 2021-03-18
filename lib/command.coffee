@@ -90,8 +90,8 @@ runner = ->
 
   opts.parse(options.reverse(), args,  true)
 
-  path = opts.arg('path') || '.'
-  path.split(/\s*,\s*/)
+  path = (opts.arg('path') || '.')
+    .split(/\s*,\s*/)
     .map((x)->resolve(x))
 
   port = opts.get('port') || 35729

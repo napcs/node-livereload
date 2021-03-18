@@ -230,6 +230,9 @@ When submitting code, please keep commits small, and do not modify the README fi
 
 # Changelog
 
+### 0.9.3
+* CLI: Fix multiple path parsing bug.
+
 ### 0.9.2
 * Server: Added `filesToReload` option to specify a list of filenames that should trigger the reload, rather than relying on extensions alone.
 * CLI: You can use the `-f` or `--filesToReload` option with the command line tool to specifiy filenames that should trigger a reload.

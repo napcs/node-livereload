@@ -1,7 +1,7 @@
 {
   "name": "livereload",
   "description": "LiveReload server",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "contributors": [
     {
       "name": "Brian P. Hogan",
