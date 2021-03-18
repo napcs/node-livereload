@@ -234,6 +234,10 @@ You can use the `index.html` file in the `examples` folder to test things in you
 
 ### 0.10.0
 * Transpiled to JavaScript. No more CoffeeScript developer dependency. This removes the last trace of the original version and should hopefully make it easier to contribute to the project.
+
+### 0.9.3
+* CLI: Fix multiple path parsing bug.
+
 ### 0.9.2
 * Server: Added `filesToReload` option to specify a list of filenames that should trigger the reload, rather than relying on extensions alone.
 * CLI: You can use the `-f` or `--filesToReload` option with the command line tool to specifiy filenames that should trigger a reload.
