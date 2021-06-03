@@ -17,6 +17,13 @@ defaultExts = [
 
 defaultExclusions = [/\.git\//, /\.svn\//, /\.hg\//]
 
+defaultHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
+  'Access-Control-Max-Age': 2592000, // 30 days
+  'Content-Type': 'text/javascript'
+}
+
 # Server accepts a Configuration object to configure the server.
 #
 # `version`: The protocol version to use.
@@ -220,7 +227,7 @@ class Server extends EventEmitter
 exports.createServer = (config = {}, callback) ->
   requestHandler = ( req, res )->
     if url.parse(req.url).pathname is '/livereload.js'
-      res.writeHead(200, {'Content-Type': 'text/javascript'})
+      res.writeHead(200, defaultHeaders)
       res.end fs.readFileSync require.resolve 'livereload-js'
   if !config.https?
     app = http.createServer requestHandler
