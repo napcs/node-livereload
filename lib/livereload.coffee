@@ -19,8 +19,8 @@ defaultExclusions = [/\.git\//, /\.svn\//, /\.hg\//]
 
 defaultHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
-  'Access-Control-Max-Age': 2592000,
+  'Access-Control-Allow-Methods': 'GET',
+  'Access-Control-Allow-Headers': 'cache-control,pragma',
   'Content-Type': 'text/javascript'
 }
 
