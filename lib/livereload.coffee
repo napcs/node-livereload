@@ -224,7 +224,7 @@ exports.createServer = (config = {}, callback) ->
         'Content-Type': 'application/javascript'
       }
       if config?.corp
-        headers['Access-Control-Allow-Origin'] = 'same-origin'
+        headers['Cross-Origin-Resource-Policy'] = 'cross-origin';
       
       res.writeHead(200, headers)
       res.end fs.readFileSync require.resolve 'livereload-js'
