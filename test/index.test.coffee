@@ -49,6 +49,25 @@ describe 'livereload config', ->
       done()
     )
     server.config.filesToReload.should.eql(["index.html"])
+  
+  it 'should support CORP headers', (done) ->
+    server = livereload.createServer({ corp: true }, ->
+      server.close()
+      done()
+    )
+    server.config.corp.should.eql true
+  # TODO: Add Support for CORS
+
+
+describe 'livereload headers', ->
+  it 'should set the correct CORP headers', (done) ->
+    server = livereload.createServer({ port: 35729, corp: true }, ->
+      request.get 'http://localhost:35729/livereload.js', (err, res, body) ->
+        res.headers['cross-origin-resource-policy'].should.equal 'cross-origin'
+        server.close()
+        done()
+    )
+  # TODO: Add CORS Response Validation
 
 describe 'livereload http file serving', ->
 
