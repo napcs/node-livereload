@@ -51,21 +51,21 @@ describe 'livereload config', ->
     server.config.filesToReload.should.eql(["index.html"])
   
   it 'should support CORP headers', (done) ->
-    server = livereload.createServer({ port: 35730, corp: true }, ->
+    server = livereload.createServer({ corp: true }, ->
       server.close()
       done()
     )
     server.config.corp.should.eql true
   
   it 'should support default CORS headers', (done) ->
-    server = livereload.createServer({ port: 35731, cors: true }, ->
+    server = livereload.createServer({ cors: true }, ->
       server.close()
       done()
     )
     server.config.cors.should.eql true
 
   it 'should support a specific CORS headers', (done) ->
-    server = livereload.createServer({ port: 35732, cors: 'localhost' }, ->
+    server = livereload.createServer({ cors: 'localhost' }, ->
       server.close()
       done()
     )
