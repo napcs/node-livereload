@@ -93,6 +93,13 @@ runner = ->
       require: false,
       value: true
     }
+    {
+      short: "cs"
+      long: "cors"
+      description: "Enable CORS Header for all or specific origins",
+      require: false,
+      value: true
+    }
   ]
 
   opts.parse(options.reverse(), args,  true)

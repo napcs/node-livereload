@@ -224,7 +224,10 @@ exports.createServer = (config = {}, callback) ->
         'Content-Type': 'application/javascript'
       }
       if config?.corp
-        headers['Cross-Origin-Resource-Policy'] = 'cross-origin';
+        headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+      if config?.cors
+        headers['Access-Control-Allow-Origin'] = if typeof config.cors is 'string' then config.cors else '*'
+        headers['Access-Control-Allow-Methods'] = 'OPTIONS, HEAD, GET, POST'
       
       res.writeHead(200, headers)
       res.end fs.readFileSync require.resolve 'livereload-js'
