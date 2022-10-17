@@ -218,17 +218,18 @@ class Server extends EventEmitter
     @server.close()
 
 exports.createServer = (config = {}, callback) ->
+  
+  headers = {
+    'Content-Type': 'application/javascript'
+  }
+  if config?.corp
+    headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+  if config?.cors
+    headers['Access-Control-Allow-Origin'] = if typeof config.cors is 'string' then config.cors else '*'
+    headers['Access-Control-Allow-Methods'] = 'OPTIONS, HEAD, GET, POST'
+
   requestHandler = ( req, res )->
     if url.parse(req.url).pathname is '/livereload.js'
-      headers = {
-        'Content-Type': 'application/javascript'
-      }
-      if config?.corp
-        headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
-      if config?.cors
-        headers['Access-Control-Allow-Origin'] = if typeof config.cors is 'string' then config.cors else '*'
-        headers['Access-Control-Allow-Methods'] = 'OPTIONS, HEAD, GET, POST'
-      
       res.writeHead(200, headers)
       res.end fs.readFileSync require.resolve 'livereload-js'
   if !config.https?
