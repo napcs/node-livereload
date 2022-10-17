@@ -74,7 +74,7 @@ describe 'livereload config', ->
 
 describe 'livereload headers', ->
   it 'should receive the correct CORP headers', (done) ->
-    server = livereload.createServer({ corp: true, cors: true }, ->
+    server = livereload.createServer({ corp: true }, ->
       request.get "http://localhost:#{server.config.port}/livereload.js", (err, res, body) ->
         res.headers['cross-origin-resource-policy'].should.equal 'cross-origin'
         server.close()
