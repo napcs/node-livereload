@@ -86,6 +86,20 @@ runner = ->
       required: false,
       value: true
     }
+    {
+      short: "cp"
+      long: "corp"
+      description: "Enable CORP Header with cross-origin",
+      require: false,
+      value: true
+    }
+    {
+      short: "cs"
+      long: "cors"
+      description: "Enable CORS Header for all or specific origins",
+      require: false,
+      value: true
+    }
   ]
 
   opts.parse(options.reverse(), args,  true)

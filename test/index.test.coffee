@@ -49,6 +49,53 @@ describe 'livereload config', ->
       done()
     )
     server.config.filesToReload.should.eql(["index.html"])
+  
+  it 'should support CORP headers', (done) ->
+    server = livereload.createServer({ corp: true }, ->
+      server.close()
+      done()
+    )
+    server.config.corp.should.eql true
+  
+  it 'should support default CORS headers', (done) ->
+    server = livereload.createServer({ cors: true }, ->
+      server.close()
+      done()
+    )
+    server.config.cors.should.eql true
+
+  it 'should support a specific CORS headers', (done) ->
+    server = livereload.createServer({ cors: 'localhost' }, ->
+      server.close()
+      done()
+    )
+    server.config.cors.should.eql 'localhost'
+
+
+describe 'livereload headers', ->
+  it 'should receive the correct CORP headers', (done) ->
+    server = livereload.createServer({ corp: true }, ->
+      request.get "http://localhost:#{server.config.port}/livereload.js", (err, res, body) ->
+        res.headers['cross-origin-resource-policy'].should.equal 'cross-origin'
+        server.close()
+        done()
+    )
+
+  it 'should receive the correct default CORS headers', (done) ->
+    server = livereload.createServer({ cors: true }, ->
+      request.get "http://localhost:#{server.config.port}/livereload.js", (err, res, body) ->
+        res.headers['access-control-allow-origin'].should.equal '*'
+        server.close()
+        done()
+    )
+
+  it 'should receive the correct sepecfic CORS headers', (done) ->
+    server = livereload.createServer({ cors: 'localhost' }, ->
+      request.get "http://localhost:#{server.config.port}/livereload.js", (err, res, body) ->
+        res.headers['access-control-allow-origin'].should.equal 'localhost'
+        server.close()
+        done()
+    )
 
 describe 'livereload http file serving', ->
 
