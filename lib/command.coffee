@@ -31,6 +31,13 @@ runner = ->
       required: false
     }
     {
+      short: "h"
+      long:  "host"
+      description: "Specify the host the server should listen on."
+      value: true
+      required: false
+    }
+    {
       short: "x"
       long: "exclusions"
       description: "Exclude files from being watched by specifying an array of regular expressions. Will be appended to default value which is [/\.git\//, /\.svn\//, /\.hg\//]",
@@ -95,6 +102,7 @@ runner = ->
     .map((x)->resolve(x))
 
   port = opts.get('port') || 35729
+  host = opts.get('host') || 'localhost'
   exclusions = if opts.get('exclusions') then opts.get('exclusions' ).split(',' ).map((s) -> new RegExp(s)) else []
   exts = if opts.get('exts') then opts.get('exts').split(',').map((ext) -> ext.trim()) else  []
   extraExts = if opts.get('extraExts') then opts.get('extraExts').split(',').map((ext) -> ext.trim()) else  []
@@ -105,6 +113,7 @@ runner = ->
 
   server = livereload.createServer({
     port: port
+    host: host
     debug: debug
     exclusions: exclusions,
     exts: exts
@@ -115,7 +124,7 @@ runner = ->
     originalPath: originalPath
   })
 
-  console.log "Starting LiveReload v#{version} for #{path} on port #{port}."
+  console.log "Starting LiveReload v#{version} for #{path} on #{host}:#{port}."
 
   server.on 'error', (err) ->
     if err.code == "EADDRINUSE"
