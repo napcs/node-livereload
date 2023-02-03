@@ -31,8 +31,8 @@ runner = ->
       required: false
     }
     {
-      short: "h"
-      long:  "host"
+      short: "b"
+      long:  "bind"
       description: "Specify the host the server should listen on."
       value: true
       required: false
@@ -102,7 +102,7 @@ runner = ->
     .map((x)->resolve(x))
 
   port = opts.get('port') || 35729
-  host = opts.get('host') || 'localhost'
+  host = opts.get('bind') || 'localhost'
   exclusions = if opts.get('exclusions') then opts.get('exclusions' ).split(',' ).map((s) -> new RegExp(s)) else []
   exts = if opts.get('exts') then opts.get('exts').split(',').map((ext) -> ext.trim()) else  []
   extraExts = if opts.get('extraExts') then opts.get('extraExts').split(',').map((ext) -> ext.trim()) else  []
