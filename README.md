@@ -9,7 +9,7 @@ An implementation of the LiveReload server in Node.js. It's an alternative to th
 
 You can use this by using the official browser extension or by adding JavaScript code to your page.
 
-## Method 1: Use Browser Extension
+### Method 1: Use Browser Extension
 
 Install the LiveReload browser plugins by visiting [http://help.livereload.com/kb/general-use/browser-extensions](http://help.livereload.com/kb/general-use/browser-extensions).
 
