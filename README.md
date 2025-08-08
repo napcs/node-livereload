@@ -58,7 +58,8 @@ $ livereload ~/website
 
 The commandline options are
 
-* `-p` or `--port` to specify the listening port
+* `-p` or `--port` to specify the listening port.
+* `-b` or `--bind` to specify the host name to which to bind the server.
 * `-d` or `--debug` to show debug messages when the browser reloads.
 * `-e` or `--exts` to specify extentions that you want to observe. Example: ` -e 'jade,scss'`. Removes the default extensions.
 * `-ee` or `--extraExts` to include additional extentions that you want to observe. Example: ` -ee 'jade,scss'`.
@@ -146,6 +147,7 @@ The first are some configuration options, passed as a JavaScript object:
 
 * `https` is an optional object of options to be passed to [https.createServer](http://nodejs.org/api/https.html#https_https_createserver_options_requestlistener) (if not provided, `http.createServer` is used instead)
 * `port` is the listening port. It defaults to `35729` which is what the LiveReload extensions use currently.
+* `bind` is the host name to which to bind the server. It defaults to `localhost`.
 * `exts` is an array of extensions you want to observe. This overrides the default extensions of `[`html`, `css`, `js`, `png`, `gif`, `jpg`, `php`, `php5`, `py`, `rb`,  `erb`, `coffee`]`.
 * `extraExts` is an array of extensions you want to observe. The default extensions are `[`html`, `css`, `js`, `png`, `gif`, `jpg`, `php`, `php5`, `py`, `rb`,  `erb`, `coffee`]`.
 * `applyCSSLive` tells LiveReload to reload CSS files in the background instead of refreshing the page. The default for this is `true`.
@@ -229,6 +231,10 @@ Contributions welcome, but remember that this library is meant to be small and s
 When submitting code, please keep commits small, and do not modify the README file. Commit both the Coffee and JS files.
 
 # Changelog
+
+### 0.9.4
+* Server: Added `host` option to specify the host name to bind the server to.
+* CLI: Added `-b` or `--bind` option to specify the host name to bind the server to.
 
 ### 0.9.3
 * CLI: Fix multiple path parsing bug.
