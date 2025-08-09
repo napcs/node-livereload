@@ -142,8 +142,9 @@ describe 'livereload http file serving', ->
       ws.send data
     ws.on 'message', (data, flags) ->
       console.log "hello"
-
-      data.should.equal JSON.stringify {
+      
+      message = data.toString()
+      message.should.equal JSON.stringify {
           command: 'hello',
           protocols: [
               'http://livereload.com/protocols/official-7',
