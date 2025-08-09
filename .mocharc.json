@@ -1,0 +1,7 @@
+{
+  "require": ["coffeescript/register"],
+  "reporter": "spec",
+  "ui": "bdd",
+  "timeout": 10000,
+  "spec": "test/**/*.coffee"
+}

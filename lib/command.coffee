@@ -4,7 +4,6 @@ runner = ->
   livereload = require './livereload'
   resolve    = require('path').resolve
   opts       = require 'opts'
-  debug      = false;
 
   args = [
     {
@@ -48,8 +47,7 @@ runner = ->
       short: "d"
       long: "debug"
       description: "See helpful debugging information",
-      required: false,
-      callback: -> debug = true
+      required: false
     }
     {
       short: "e"
@@ -76,8 +74,7 @@ runner = ->
       short: "u"
       long: "usepolling"
       description: "Poll for file system changes. Set this to true to successfully watch files over a network.",
-      required: false,
-      value: true
+      required: false
     }
     {
       short: "w"
@@ -97,8 +94,7 @@ runner = ->
       short: "cp"
       long: "corp"
       description: "Enable CORP Header with cross-origin",
-      require: false,
-      value: true
+      require: false
     }
     {
       short: "cs"
@@ -115,6 +111,7 @@ runner = ->
     .split(/\s*,\s*/)
     .map((x)->resolve(x))
 
+  debug = opts.get('debug') || false
   port = opts.get('port') || 35729
   host = opts.get('bind') || 'localhost'
   exclusions = if opts.get('exclusions') then opts.get('exclusions' ).split(',' ).map((s) -> new RegExp(s)) else []
@@ -124,6 +121,8 @@ runner = ->
   usePolling = opts.get('usepolling') || false
   wait = opts.get('wait') || 0
   originalPath = opts.get('originalPath') || ''
+  cors = opts.get('cors') || false
+  corp = opts.get('cors') || false
 
   server = livereload.createServer({
     port: port
@@ -136,6 +135,8 @@ runner = ->
     filesToReload: filesToReload
     delay: wait
     originalPath: originalPath
+    cors: cors
+    corp: corp
   })
 
   console.log "Starting LiveReload v#{version} for #{path} on #{host}:#{port}."
