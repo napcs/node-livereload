@@ -1,7 +1,7 @@
 {
   "name": "livereload",
   "description": "LiveReload server",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "contributors": [
     {
       "name": "Brian P. Hogan",
@@ -20,7 +20,7 @@
   "dependencies": {
     "chokidar": "^4.0.3",
     "livereload-js": "^4.0.2",
-    "opts": ">= 2.0.2",
+    "opts": "^2.0.2",
     "ws": "^8.4.3"
   },
   "devDependencies": {

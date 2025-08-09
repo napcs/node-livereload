@@ -1,6 +1,5 @@
 runner = ->
   pjson      = require('../package.json')
-  version    = pjson.version
   livereload = require './livereload'
   resolve    = require('path').resolve
   opts       = require 'opts'
@@ -19,7 +18,7 @@ runner = ->
       description: "Show the version"
       required: false
       callback: ->
-        console.log version
+        console.log pjson.version
         process.exit(1)
     }
     {
@@ -52,7 +51,7 @@ runner = ->
     {
       short: "e"
       long: "exts",
-      description: "A comma-separated list of extensions that should trigger a reload when changed. Replaces default extentions",
+      description: "A comma-separated list of extensions that should trigger a reload when changed. Replaces default extensions",
       required: false,
       value: true
     }
@@ -86,7 +85,7 @@ runner = ->
     {
       short: "op"
       long: "originalpath",
-      description: "Set a URL you use for development, e.g 'http:/domain.com', then LiveReload will proxy this url to local path."
+      description: "Set a URL you use for development, e.g 'http://domain.com', then LiveReload will proxy this url to local path."
       required: false,
       value: true
     }
@@ -94,13 +93,13 @@ runner = ->
       short: "cp"
       long: "corp"
       description: "Enable CORP Header with cross-origin",
-      require: false
+      required: false
     }
     {
       short: "cs"
       long: "cors"
       description: "Enable CORS Header for all or specific origins",
-      require: false,
+      required: false,
       value: true
     }
   ]
@@ -112,17 +111,17 @@ runner = ->
     .map((x)->resolve(x))
 
   debug = opts.get('debug') || false
-  port = opts.get('port') || 35729
+  port = parseInt(opts.get('port')) || 35729
   host = opts.get('bind') || 'localhost'
-  exclusions = if opts.get('exclusions') then opts.get('exclusions' ).split(',' ).map((s) -> new RegExp(s)) else []
-  exts = if opts.get('exts') then opts.get('exts').split(',').map((ext) -> ext.trim()) else  []
-  extraExts = if opts.get('extraExts') then opts.get('extraExts').split(',').map((ext) -> ext.trim()) else  []
-  filesToReload = if opts.get('filesToReload') then opts.get('filesToReload').split(',').map((file) -> file.trim()) else  []
+  exclusions = if opts.get('exclusions') then opts.get('exclusions').split(',').map((s) -> new RegExp(s)) else []
+  exts = if opts.get('exts') then opts.get('exts').split(',').map((ext) -> ext.trim()) else []
+  extraExts = if opts.get('extraExts') then opts.get('extraExts').split(',').map((ext) -> ext.trim()) else []
+  filesToReload = if opts.get('filesToReload') then opts.get('filesToReload').split(',').map((file) -> file.trim()) else []
   usePolling = opts.get('usepolling') || false
-  wait = opts.get('wait') || 0
-  originalPath = opts.get('originalPath') || ''
+  wait = parseInt(opts.get('wait')) || 0
+  originalPath = opts.get('originalpath') || ''
   cors = opts.get('cors') || false
-  corp = opts.get('cors') || false
+  corp = opts.get('corp') || false
 
   server = livereload.createServer({
     port: port
@@ -137,9 +136,12 @@ runner = ->
     originalPath: originalPath
     cors: cors
     corp: corp
+    noListen: true      # no listening when creating the server so we can test the options.
   })
 
-  console.log "Starting LiveReload v#{version} for #{path} on #{host}:#{port}."
+  server.listen()
+
+  console.log "Starting LiveReload v#{pjson.version} for #{path} on #{host}:#{port}."
 
   server.on 'error', (err) ->
     if err.code == "EADDRINUSE"
