@@ -224,6 +224,13 @@ When submitting code, please keep commits small, and do not modify the README fi
 
 # Changelog
 
+### 0.10.2
+* Dependencies: Update Chokidar, opts, and WS to latest versions.
+* CLI: Fix `--corp` flag not working as intended
+* CLI: Fix `--cors` flag no longer sets CORP header.
+* CLI: Fix `--originalpath` flag sets proper value.
+* CLI: Fix some typos in CLI help
+
 ### 0.10.1
 * Fix errant debug message in CLI
 
