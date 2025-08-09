@@ -23,6 +23,8 @@ defaultExclusions = [/\.git\//, /\.svn\//, /\.hg\//]
 # `version`: The protocol version to use.
 # `port`: the LiveReload listen port
 # `host`: the LiveReload listen host
+# `corp`: enable Cross-Origin Resource Policy support.
+# `cors`: Enable CORS (all or specified hostname)
 # `exts`: the extensions to watch. An array of extensions.
 # `extraExts`: extensions in addition to the default extensions
 # `exclusions`: array of regex patterns to exclude. Default is [/\.git\//, /\.svn\//, /\.hg\//]
@@ -35,6 +37,7 @@ defaultExclusions = [/\.git\//, /\.svn\//, /\.hg\//]
 #
 class Server extends EventEmitter
   constructor: (@config) ->
+    super()
     @config ?= {}
 
     @config.version ?= protocol_version
@@ -221,7 +224,7 @@ class Server extends EventEmitter
     @server.close()
 
 exports.createServer = (config = {}, callback) ->
-  
+
   headers = {
     'Content-Type': 'application/javascript'
   }
@@ -232,13 +235,19 @@ exports.createServer = (config = {}, callback) ->
     headers['Access-Control-Allow-Methods'] = 'OPTIONS, HEAD, GET, POST'
 
   requestHandler = ( req, res )->
-    if url.parse(req.url).pathname is '/livereload.js'
+    if req.url.startsWith '/livereload.js'
       res.writeHead(200, headers)
       res.end fs.readFileSync require.resolve 'livereload-js'
   if !config.https?
     app = http.createServer requestHandler
   else
     app = https.createServer config.https, requestHandler
+
+  if config.debug
+    console.log "Headers:"
+    for key, value of headers
+      console.log "#{key}: #{value}"
+
 
   config.server ?= app
 
