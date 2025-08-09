@@ -18,10 +18,10 @@
   },
   "main": "./lib/livereload.js",
   "dependencies": {
-    "chokidar": "^3.5.0",
+    "chokidar": "^4.0.3",
     "livereload-js": "^4.0.2",
-    "opts": ">= 1.2.0",
-    "ws": "^7.4.3"
+    "opts": ">= 2.0.2",
+    "ws": "^8.4.3"
   },
   "devDependencies": {
     "coffeescript": "^2.7.0",
