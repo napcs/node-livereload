@@ -224,6 +224,9 @@ When submitting code, please keep commits small, and do not modify the README fi
 
 # Changelog
 
+### 0.10.1
+* Fix errant debug message in CLI
+
 ### 0.10.0
 * Server: Added `host` option to specify the host name to bind the server to.
 * CLI: Added `-b` or `--bind` option to specify the host name to bind the server to.
