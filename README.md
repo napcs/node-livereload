@@ -230,6 +230,7 @@ When submitting code, please keep commits small, and do not modify the README fi
 * CLI: Fix `--cors` flag no longer sets CORP header.
 * CLI: Fix `--originalpath` flag sets proper value.
 * CLI: Fix some typos in CLI help
+* Add tests for CLI arguments and reworked CLI code to allow for testing.
 
 ### 0.10.1
 * Fix errant debug message in CLI

@@ -1,8 +1,30 @@
+pjson      = require('../package.json')
+livereload = require './livereload'
+resolve    = require('path').resolve
+
 runner = ->
-  pjson      = require('../package.json')
-  livereload = require './livereload'
-  resolve    = require('path').resolve
-  opts       = require 'opts'
+  res    = parseArgsAndCreateServer(true)
+  server = res.server
+  path   = res.path
+
+  console.log "Starting LiveReload v#{pjson.version} for #{path} on #{server.host}:#{server.port}."
+
+  server.on 'error', (err) ->
+
+    if err.code == "EADDRINUSE"
+      console.log("The port LiveReload wants to use is used by something else.")
+    else
+      throw err
+
+    process.exit(1)
+
+  server.watch(path)
+
+# Parse the arguments and create the server.
+# shouldListen option exists so we can start the server under CLI, but not when
+# we use this from the entrypoint for tests
+parseArgsAndCreateServer = (shouldListen = true) ->
+  opts = require 'opts'
 
   args = [
     {
@@ -104,7 +126,7 @@ runner = ->
     }
   ]
 
-  opts.parse(options.reverse(), args,  true)
+  opts.parse(options.reverse(), args, true)
 
   path = (opts.arg('path') || '.')
     .split(/\s*,\s*/)
@@ -136,21 +158,40 @@ runner = ->
     originalPath: originalPath
     cors: cors
     corp: corp
-    noListen: true      # no listening when creating the server so we can test the options.
+    noListen: not shouldListen
   })
 
-  server.listen()
 
-  console.log "Starting LiveReload v#{pjson.version} for #{path} on #{host}:#{port}."
+  {
+    server: server
+    path: path
+  }
 
-  server.on 'error', (err) ->
-    if err.code == "EADDRINUSE"
-      console.log("The port LiveReload wants to use is used by something else.")
-    else
-      throw err
-    process.exit(1)
 
-  server.watch(path)
+# This is the entrypoint that tests use to verify our option parsing.
+# It doesn't start the server.
+# The opts library directly parses process.argv. That means
+# when we run tests with Mocha it gets the Mocha args, not our args.
+# So this is hacky indirection that lets us send our own args
+# from the tests and still run them through the same parsing function
+# the CLI uses.
+createServerFromArgs = (testArgv) ->
+  # Save original process.argv and parse with test arguments
+  originalArgv = process.argv
+
+  # replace the args with our test args
+  process.argv = ['node', 'test'].concat(testArgv)
+
+  # Reset opts internal state by requiring a fresh instance
+  delete require.cache[require.resolve('opts')]
+
+  try
+    result = parseArgsAndCreateServer(false) # false = don't listen, for testing
+    return result
+  finally
+    # Always restore original process.argv
+    process.argv = originalArgv
 
 module.exports =
   run: runner
+  createServerFromArgs: createServerFromArgs
