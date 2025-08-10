@@ -9,18 +9,12 @@ sinon = require 'sinon'
 
 describe 'livereload config', ->
 
-  it 'should remove default exts when provided new exts', (done) ->
-    server = livereload.createServer({ port: 35729, exts: ["html"]}, ->
-      server.close()
-      done()
-    )
+  it 'should remove default exts when provided new exts', ->
+    server = livereload.createServer({ port: 35729, exts: ["html"], noListen: true})
     server.config.exts.should.eql(["html"])
 
-  it 'should incldue default exts when provided extraExts', (done) ->
-    server = livereload.createServer({ port: 35729, extraExts: ["foobar"]}, ->
-      server.close()
-      done()
-    )
+  it 'should incldue default exts when provided extraExts', ->
+    server = livereload.createServer({ port: 35729, extraExts: ["foobar"], noListen: true})
 
     extensionsList = [
       'foobar',
@@ -29,11 +23,8 @@ describe 'livereload config', ->
     ]
     server.config.exts.should.eql(extensionsList)
 
-  it 'extraExts must override exts if both are given', (done) ->
-    server = livereload.createServer({ port: 35729, exts: ["md"], extraExts: ["foobar"]}, ->
-      server.close()
-      done()
-    )
+  it 'extraExts must override exts if both are given', ->
+    server = livereload.createServer({ port: 35729, exts: ["md"], extraExts: ["foobar"], noListen: true})
 
     extensionsList = [
       'foobar',
@@ -42,34 +33,21 @@ describe 'livereload config', ->
     ]
     server.config.exts.should.eql(extensionsList)
 
-  it 'should support filesToReload', (done) ->
-    server = livereload.createServer({ port: 35729, filesToReload: ["index.html"]}, ->
-      server.close()
-      done()
-    )
+  it 'should support filesToReload', ->
+    server = livereload.createServer({ port: 35729, filesToReload: ["index.html"], noListen: true})
     server.config.filesToReload.should.eql(["index.html"])
 
-  it 'should support CORP headers', (done) ->
-    server = livereload.createServer({ corp: true }, ->
-      server.close()
-      done()
-    )
+  it 'should support CORP headers', ->
+    server = livereload.createServer({ corp: true, noListen: true })
     server.config.corp.should.eql true
 
-  it 'should support default CORS headers', (done) ->
-    server = livereload.createServer({ cors: true }, ->
-      server.close()
-      done()
-    )
+  it 'should support default CORS headers', ->
+    server = livereload.createServer({ cors: true, noListen: true })
     server.config.cors.should.eql true
 
-  it 'should support a specific CORS headers', (done) ->
-    server = livereload.createServer({ cors: 'localhost' }, ->
-      server.close()
-      done()
-    )
+  it 'should support a specific CORS headers', ->
+    server = livereload.createServer({ cors: 'localhost', noListen: true })
     server.config.cors.should.eql 'localhost'
-
 
 describe 'livereload headers', ->
   it 'should receive the correct CORP headers', (done) ->
@@ -142,7 +120,7 @@ describe 'livereload http file serving', ->
       ws.send data
     ws.on 'message', (data, flags) ->
       console.log "hello"
-      
+
       message = data.toString()
       message.should.equal JSON.stringify {
           command: 'hello',
@@ -188,9 +166,6 @@ describe 'livereload http file serving', ->
 
     fileContents = fs.readFileSync('./node_modules/livereload-js/dist/livereload.js').toString()
 
-    # allow us to use our self-signed cert for testing
-    # process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-
     fetch 'https://localhost:35729/livereload.js?snipver=1'
     .then (response) ->
       response.status.should.equal 200
@@ -198,7 +173,6 @@ describe 'livereload http file serving', ->
     .then (body) ->
       fileContents.should.equal body
     .finally ->
-      # delete process.env.NODE_TLS_REJECT_UNAUTHORIZED
       server.config.server.close()
 
   it 'should support passing a callback to the websocket server', (done) ->
