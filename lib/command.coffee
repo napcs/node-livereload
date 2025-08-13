@@ -7,7 +7,7 @@ runner = ->
   server = res.server
   path   = res.path
 
-  console.log "Starting LiveReload v#{pjson.version} for #{path} on #{server.host}:#{server.port}."
+  console.log "Starting LiveReload v#{pjson.version} for #{path} on #{server.config.host}:#{server.config.port}."
 
   server.on 'error', (err) ->
 
