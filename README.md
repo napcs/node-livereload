@@ -224,6 +224,9 @@ When submitting code, please keep commits small, and do not modify the README fi
 
 # Changelog
 
+### 0.10.3
+* CLI: Fix port and host not displaying the right data after refactoring.
+
 ### 0.10.2
 * Dependencies: Update Chokidar, opts, and WS to latest versions.
 * CLI: Fix `--corp` flag not working as intended
