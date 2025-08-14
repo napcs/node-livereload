@@ -9,6 +9,7 @@ EventEmitter = require('events')
 
 protocol_version = '7'
 defaultPort = 35729
+defaultHost = 'localhost'
 
 defaultExts = [
   'html', 'css', 'js', 'png', 'gif', 'jpg',
@@ -21,6 +22,9 @@ defaultExclusions = [/\.git\//, /\.svn\//, /\.hg\//]
 #
 # `version`: The protocol version to use.
 # `port`: the LiveReload listen port
+# `host`: the LiveReload listen host
+# `corp`: enable Cross-Origin Resource Policy support.
+# `cors`: Enable CORS (all or specified hostname)
 # `exts`: the extensions to watch. An array of extensions.
 # `extraExts`: extensions in addition to the default extensions
 # `exclusions`: array of regex patterns to exclude. Default is [/\.git\//, /\.svn\//, /\.hg\//]
@@ -33,10 +37,12 @@ defaultExclusions = [/\.git\//, /\.svn\//, /\.hg\//]
 #
 class Server extends EventEmitter
   constructor: (@config) ->
+    super()
     @config ?= {}
 
     @config.version ?= protocol_version
     @config.port    ?= defaultPort
+    @config.host    ?= defaultHost
 
     @config.exts       ?= []
     @config.extraExts  ?= []
@@ -69,10 +75,10 @@ class Server extends EventEmitter
     """
 
     if @config.server
-      @config.server.listen @config.port
+      @config.server.listen @config.port, @config.host
       @server = new ws.Server({server: @config.server})
     else
-      @server = new ws.Server({port: @config.port})
+      @server = new ws.Server({port: @config.port, host: @config.host})
 
     @server.on 'connection', @onConnection.bind @
     @server.on 'close',      @onClose.bind @
@@ -218,14 +224,30 @@ class Server extends EventEmitter
     @server.close()
 
 exports.createServer = (config = {}, callback) ->
+
+  headers = {
+    'Content-Type': 'application/javascript'
+  }
+  if config?.corp
+    headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+  if config?.cors
+    headers['Access-Control-Allow-Origin'] = if typeof config.cors is 'string' then config.cors else '*'
+    headers['Access-Control-Allow-Methods'] = 'OPTIONS, HEAD, GET, POST'
+
   requestHandler = ( req, res )->
-    if url.parse(req.url).pathname is '/livereload.js'
-      res.writeHead(200, {'Content-Type': 'text/javascript'})
+    if req.url.startsWith '/livereload.js'
+      res.writeHead(200, headers)
       res.end fs.readFileSync require.resolve 'livereload-js'
   if !config.https?
     app = http.createServer requestHandler
   else
     app = https.createServer config.https, requestHandler
+
+  if config.debug
+    console.log "Headers:"
+    for key, value of headers
+      console.log "#{key}: #{value}"
+
 
   config.server ?= app
 

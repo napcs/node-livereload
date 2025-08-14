@@ -1,8 +1,7 @@
 livereload = require '../lib/livereload'
 should = require 'should'
-request = require 'request'
 http = require 'http'
-url = require 'url'
+https = require 'https'
 fs = require 'fs'
 path = require 'path'
 WebSocket = require 'ws'
@@ -10,18 +9,12 @@ sinon = require 'sinon'
 
 describe 'livereload config', ->
 
-  it 'should remove default exts when provided new exts', (done) ->
-    server = livereload.createServer({ port: 35729, exts: ["html"]}, ->
-      server.close()
-      done()
-    )
+  it 'should remove default exts when provided new exts', ->
+    server = livereload.createServer({ port: 35729, exts: ["html"], noListen: true})
     server.config.exts.should.eql(["html"])
 
-  it 'should incldue default exts when provided extraExts', (done) ->
-    server = livereload.createServer({ port: 35729, extraExts: ["foobar"]}, ->
-      server.close()
-      done()
-    )
+  it 'should incldue default exts when provided extraExts', ->
+    server = livereload.createServer({ port: 35729, extraExts: ["foobar"], noListen: true})
 
     extensionsList = [
       'foobar',
@@ -30,11 +23,8 @@ describe 'livereload config', ->
     ]
     server.config.exts.should.eql(extensionsList)
 
-  it 'extraExts must override exts if both are given', (done) ->
-    server = livereload.createServer({ port: 35729, exts: ["md"], extraExts: ["foobar"]}, ->
-      server.close()
-      done()
-    )
+  it 'extraExts must override exts if both are given', ->
+    server = livereload.createServer({ port: 35729, exts: ["md"], extraExts: ["foobar"], noListen: true})
 
     extensionsList = [
       'foobar',
@@ -43,28 +33,76 @@ describe 'livereload config', ->
     ]
     server.config.exts.should.eql(extensionsList)
 
-  it 'should support filesToReload', (done) ->
-    server = livereload.createServer({ port: 35729, filesToReload: ["index.html"]}, ->
-      server.close()
-      done()
-    )
+  it 'should support filesToReload', ->
+    server = livereload.createServer({ port: 35729, filesToReload: ["index.html"], noListen: true})
     server.config.filesToReload.should.eql(["index.html"])
+
+  it 'should support CORP headers', ->
+    server = livereload.createServer({ corp: true, noListen: true })
+    server.config.corp.should.eql true
+
+  it 'should support default CORS headers', ->
+    server = livereload.createServer({ cors: true, noListen: true })
+    server.config.cors.should.eql true
+
+  it 'should support a specific CORS headers', ->
+    server = livereload.createServer({ cors: 'localhost', noListen: true })
+    server.config.cors.should.eql 'localhost'
+
+describe 'livereload headers', ->
+  it 'should receive the correct CORP headers', (done) ->
+    server = livereload.createServer({ corp: true }, ->
+      fetch("http://localhost:#{server.config.port}/livereload.js")
+        .then (res) ->
+          res.headers.get('cross-origin-resource-policy').should.equal 'cross-origin'
+          server.close()
+          done()
+        .catch (err) ->
+          server.close()
+          done(err)
+    )
+
+  it 'should receive the correct default CORS headers', (done) ->
+    server = livereload.createServer({ cors: true }, ->
+      fetch("http://localhost:#{server.config.port}/livereload.js")
+        .then (res) ->
+          res.headers.get('access-control-allow-origin').should.equal '*'
+          server.close()
+          done()
+        .catch (err) ->
+          server.close()
+          done(err)
+    )
+
+  it 'should receive the correct sepecfic CORS headers', (done) ->
+    server = livereload.createServer({ cors: 'localhost' }, ->
+      fetch("http://localhost:#{server.config.port}/livereload.js")
+        .then (res) ->
+          res.headers.get('access-control-allow-origin').should.equal 'localhost'
+          server.close()
+          done()
+        .catch (err) ->
+          server.close()
+          done(err)
+    )
 
 describe 'livereload http file serving', ->
 
-  it 'should serve up livereload.js', (done) ->
+  it 'should serve up livereload.js', ->
     server = livereload.createServer({port: 35729})
 
     fileContents = fs.readFileSync('./node_modules/livereload-js/dist/livereload.js').toString()
 
-    request 'http://localhost:35729/livereload.js?snipver=1', (error, response, body) ->
-      should.not.exist error
-      response.statusCode.should.equal 200
-      fileContents.should.equal body
-
-      server.config.server.close()
-
-      done()
+    # Small delay to ensure server is listening
+    new Promise((resolve) -> setTimeout(resolve, 100))
+      .then -> fetch('http://localhost:35729/livereload.js?snipver=1')
+      .then (response) ->
+        response.status.should.equal 200
+        response.text()
+      .then (body) ->
+        fileContents.should.equal body
+      .finally ->
+        server.config.server.close()
 
   it 'should connect to the websocket server', (done) ->
     server = livereload.createServer({port: 35729})
@@ -83,7 +121,8 @@ describe 'livereload http file serving', ->
     ws.on 'message', (data, flags) ->
       console.log "hello"
 
-      data.should.equal JSON.stringify {
+      message = data.toString()
+      message.should.equal JSON.stringify {
           command: 'hello',
           protocols: [
               'http://livereload.com/protocols/official-7',
@@ -99,24 +138,26 @@ describe 'livereload http file serving', ->
       ws.close()
       done()
 
-  it 'should allow you to override the internal http server', (done) ->
+  it 'should allow you to override the internal http server', ->
     app = http.createServer (req, res) ->
-      if url.parse(req.url).pathname is '/livereload.js'
+      if req.url.startsWith '/livereload.js'
         res.writeHead(200, {'Content-Type': 'text/javascript'})
         res.end '// nothing to see here'
 
     server = livereload.createServer({port: 35729, server: app})
 
-    request 'http://localhost:35729/livereload.js?snipver=1', (error, response, body) ->
-      should.not.exist error
-      response.statusCode.should.equal 200
-      body.should.equal '// nothing to see here'
+    # Small delay to ensure server is listening
+    new Promise((resolve) -> setTimeout(resolve, 100))
+      .then -> fetch('http://localhost:35729/livereload.js?snipver=1')
+      .then (response) ->
+        response.status.should.equal 200
+        response.text()
+      .then (body) ->
+        body.should.equal '// nothing to see here'
+      .finally ->
+        server.config.server.close()
 
-      server.config.server.close()
-
-      done()
-
-  it 'should allow you to specify ssl certificates to run via https', (done)->
+  it 'should allow you to specify ssl certificates to run via https', ->
     server = livereload.createServer
       port: 35729
       https:
@@ -125,19 +166,14 @@ describe 'livereload http file serving', ->
 
     fileContents = fs.readFileSync('./node_modules/livereload-js/dist/livereload.js').toString()
 
-    # allow us to use our self-signed cert for testing
-    unsafeRequest = request.defaults
-      strictSSL: false
-      rejectUnauthorized: false
-
-    unsafeRequest 'https://localhost:35729/livereload.js?snipver=1', (error, response, body) ->
-      should.not.exist error
-      response.statusCode.should.equal 200
+    fetch 'https://localhost:35729/livereload.js?snipver=1'
+    .then (response) ->
+      response.status.should.equal 200
+      response.text()
+    .then (body) ->
       fileContents.should.equal body
-
+    .finally ->
       server.config.server.close()
-
-      done()
 
   it 'should support passing a callback to the websocket server', (done) ->
     server = livereload.createServer {port: 35729}, ->

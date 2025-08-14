@@ -7,29 +7,17 @@ An implementation of the LiveReload server in Node.js. It's an alternative to th
 
 ## Usage
 
-You can use this by using the official browser extension or by adding JavaScript code to your page.
-
-## Method 1: Use Browser Extension
-
-Install the LiveReload browser plugins by visiting [http://help.livereload.com/kb/general-use/browser-extensions](http://help.livereload.com/kb/general-use/browser-extensions).
-
-**Note**: Only Google Chrome supports viewing `file:///` URLS, and you have to specifically enable it. If you are using other browsers and want to use `file:///` URLs, add the JS code to the page as shown in the next section.
-
-Once you have the plugin installed, start `livereload`. Then, in the browser, click the LiveReload icon to connect the browser to the server.
-
-### Method 2: Add code to page
-
-Add this code:
+Add this code to your HTML page either manually to a single page or to your template:
 
 ```html
-<script>
-  document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] +
-  ':35729/livereload.js?snipver=1"></' + 'script>')
-</script>
+<script>document.write('<script src="http://'
+    + (location.host || 'localhost').split(':')[0]
+    + ':35729/livereload.js"></'
+    + 'script>')</script>
 ```
 
 Note: If you are using a different port other than `35729` you will
-need to change the above script.
+need to change the port in the script also.
 
 ## Running LiveReload
 
@@ -58,7 +46,10 @@ $ livereload ~/website
 
 The commandline options are
 
-* `-p` or `--port` to specify the listening port
+* `-p` or `--port` to specify the listening port.
+* `-b` or `--bind` to specify the host name to which to bind the server.
+* `-cp` or `--corp` to specify Cross-Origin Resource Policy support. Sets CORP to "cross-origin" so it will work with other sites that require CORP and same-site headers. Lets this work with SharedArrayBuffer.
+* `-cs` or `--cors` to specify Cross-Origin Resource Sharing support for the provided hostnames.
 * `-d` or `--debug` to show debug messages when the browser reloads.
 * `-e` or `--exts` to specify extentions that you want to observe. Example: ` -e 'jade,scss'`. Removes the default extensions.
 * `-ee` or `--extraExts` to include additional extentions that you want to observe. Example: ` -ee 'jade,scss'`.
@@ -146,6 +137,9 @@ The first are some configuration options, passed as a JavaScript object:
 
 * `https` is an optional object of options to be passed to [https.createServer](http://nodejs.org/api/https.html#https_https_createserver_options_requestlistener) (if not provided, `http.createServer` is used instead)
 * `port` is the listening port. It defaults to `35729` which is what the LiveReload extensions use currently.
+* `bind` is the host name to which to bind the server. It defaults to `localhost`.
+* `corp` enables Cross-Origin Resource Policy support. It defaults to `false`.
+* `cors` enables Cross-Origin Resource Sharing support. Specify the domains you want to use.
 * `exts` is an array of extensions you want to observe. This overrides the default extensions of `[`html`, `css`, `js`, `png`, `gif`, `jpg`, `php`, `php5`, `py`, `rb`,  `erb`, `coffee`]`.
 * `extraExts` is an array of extensions you want to observe. The default extensions are `[`html`, `css`, `js`, `png`, `gif`, `jpg`, `php`, `php5`, `py`, `rb`,  `erb`, `coffee`]`.
 * `applyCSSLive` tells LiveReload to reload CSS files in the background instead of refreshing the page. The default for this is `true`.
@@ -206,7 +200,7 @@ When `/User/Workspace/test/css/style.css` is modified, the stylesheet will be re
 
 ## The browser extension doesn't connect.
 
-If you're using `file:///` urls, make sure the browser extension is configured to access local files.  Alternatively, embed the `livereload.js` script on your page as shown in this README. 
+If you're using `file:///` urls, make sure the browser extension is configured to access local files.  Alternatively, embed the `livereload.js` script on your page as shown in this README.
 
 ## When I change the HTML page I'm working on, the browser refreshes and tells me the file isn't found.
 
@@ -229,6 +223,30 @@ Contributions welcome, but remember that this library is meant to be small and s
 When submitting code, please keep commits small, and do not modify the README file. Commit both the Coffee and JS files.
 
 # Changelog
+
+### 0.10.3
+* CLI: Fix port and host not displaying the right data after refactoring.
+
+### 0.10.2
+* Dependencies: Update Chokidar, opts, and WS to latest versions.
+* CLI: Fix `--corp` flag not working as intended
+* CLI: Fix `--cors` flag no longer sets CORP header.
+* CLI: Fix `--originalpath` flag sets proper value.
+* CLI: Fix some typos in CLI help
+* Add tests for CLI arguments and reworked CLI code to allow for testing.
+
+### 0.10.1
+* Fix errant debug message in CLI
+
+### 0.10.0
+* Server: Added `host` option to specify the host name to bind the server to.
+* CLI: Added `-b` or `--bind` option to specify the host name to bind the server to.
+* CLI: Added `cs` option for CORS support.
+* CLI: Added `cp` option for CORP support.
+* Fix `-u` switch so it sets polling properly.
+* Dependencies: Updated Mocha to v11 and reworked teests to eliminate security vulnerabilities
+* Dependencies: Updated CoffeeScript to 2.x
+* Dependencies: Updated `livereload-js` dependency to 4.0.2
 
 ### 0.9.3
 * CLI: Fix multiple path parsing bug.
@@ -304,7 +322,7 @@ When submitting code, please keep commits small, and do not modify the README fi
 
 ### 0.4.1
 * Remove some bad JS code
-  
+
 ### 0.4.0
 * Rewritten using Chokidar library and `ws` library
 * Added `usePolling` option

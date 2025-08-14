@@ -1,10 +1,30 @@
+pjson      = require('../package.json')
+livereload = require './livereload'
+resolve    = require('path').resolve
+
 runner = ->
-  pjson      = require('../package.json')
-  version    = pjson.version
-  livereload = require './livereload'
-  resolve    = require('path').resolve
-  opts       = require 'opts'
-  debug      = false;
+  res    = parseArgsAndCreateServer(true)
+  server = res.server
+  path   = res.path
+
+  console.log "Starting LiveReload v#{pjson.version} for #{path} on #{server.config.host}:#{server.config.port}."
+
+  server.on 'error', (err) ->
+
+    if err.code == "EADDRINUSE"
+      console.log("The port LiveReload wants to use is used by something else.")
+    else
+      throw err
+
+    process.exit(1)
+
+  server.watch(path)
+
+# Parse the arguments and create the server.
+# shouldListen option exists so we can start the server under CLI, but not when
+# we use this from the entrypoint for tests
+parseArgsAndCreateServer = (shouldListen = true) ->
+  opts = require 'opts'
 
   args = [
     {
@@ -20,13 +40,20 @@ runner = ->
       description: "Show the version"
       required: false
       callback: ->
-        console.log version
+        console.log pjson.version
         process.exit(1)
     }
     {
       short: "p"
       long:  "port"
       description: "Specify the port the server should listen on."
+      value: true
+      required: false
+    }
+    {
+      short: "b"
+      long:  "bind"
+      description: "Specify the host the server should listen on."
       value: true
       required: false
     }
@@ -41,13 +68,12 @@ runner = ->
       short: "d"
       long: "debug"
       description: "See helpful debugging information",
-      required: false,
-      callback: -> debug = true
+      required: false
     }
     {
       short: "e"
       long: "exts",
-      description: "A comma-separated list of extensions that should trigger a reload when changed. Replaces default extentions",
+      description: "A comma-separated list of extensions that should trigger a reload when changed. Replaces default extensions",
       required: false,
       value: true
     }
@@ -69,8 +95,7 @@ runner = ->
       short: "u"
       long: "usepolling"
       description: "Poll for file system changes. Set this to true to successfully watch files over a network.",
-      required: false,
-      value: true
+      required: false
     }
     {
       short: "w"
@@ -82,29 +107,47 @@ runner = ->
     {
       short: "op"
       long: "originalpath",
-      description: "Set a URL you use for development, e.g 'http:/domain.com', then LiveReload will proxy this url to local path."
+      description: "Set a URL you use for development, e.g 'http://domain.com', then LiveReload will proxy this url to local path."
+      required: false,
+      value: true
+    }
+    {
+      short: "cp"
+      long: "corp"
+      description: "Enable CORP Header with cross-origin",
+      required: false
+    }
+    {
+      short: "cs"
+      long: "cors"
+      description: "Enable CORS Header for all or specific origins",
       required: false,
       value: true
     }
   ]
 
-  opts.parse(options.reverse(), args,  true)
+  opts.parse(options.reverse(), args, true)
 
   path = (opts.arg('path') || '.')
     .split(/\s*,\s*/)
     .map((x)->resolve(x))
 
-  port = opts.get('port') || 35729
-  exclusions = if opts.get('exclusions') then opts.get('exclusions' ).split(',' ).map((s) -> new RegExp(s)) else []
-  exts = if opts.get('exts') then opts.get('exts').split(',').map((ext) -> ext.trim()) else  []
-  extraExts = if opts.get('extraExts') then opts.get('extraExts').split(',').map((ext) -> ext.trim()) else  []
-  filesToReload = if opts.get('filesToReload') then opts.get('filesToReload').split(',').map((file) -> file.trim()) else  []
+  debug = opts.get('debug') || false
+  port = parseInt(opts.get('port')) || 35729
+  host = opts.get('bind') || 'localhost'
+  exclusions = if opts.get('exclusions') then opts.get('exclusions').split(',').map((s) -> new RegExp(s)) else []
+  exts = if opts.get('exts') then opts.get('exts').split(',').map((ext) -> ext.trim()) else []
+  extraExts = if opts.get('extraExts') then opts.get('extraExts').split(',').map((ext) -> ext.trim()) else []
+  filesToReload = if opts.get('filesToReload') then opts.get('filesToReload').split(',').map((file) -> file.trim()) else []
   usePolling = opts.get('usepolling') || false
-  wait = opts.get('wait') || 0
-  originalPath = opts.get('originalPath') || ''
+  wait = parseInt(opts.get('wait')) || 0
+  originalPath = opts.get('originalpath') || ''
+  cors = opts.get('cors') || false
+  corp = opts.get('corp') || false
 
   server = livereload.createServer({
     port: port
+    host: host
     debug: debug
     exclusions: exclusions,
     exts: exts
@@ -113,18 +156,42 @@ runner = ->
     filesToReload: filesToReload
     delay: wait
     originalPath: originalPath
+    cors: cors
+    corp: corp
+    noListen: not shouldListen
   })
 
-  console.log "Starting LiveReload v#{version} for #{path} on port #{port}."
 
-  server.on 'error', (err) ->
-    if err.code == "EADDRINUSE"
-      console.log("The port LiveReload wants to use is used by something else.")
-    else
-      throw err
-    process.exit(1)
+  {
+    server: server
+    path: path
+  }
 
-  server.watch(path)
+
+# This is the entrypoint that tests use to verify our option parsing.
+# It doesn't start the server.
+# The opts library directly parses process.argv. That means
+# when we run tests with Mocha it gets the Mocha args, not our args.
+# So this is hacky indirection that lets us send our own args
+# from the tests and still run them through the same parsing function
+# the CLI uses.
+createServerFromArgs = (testArgv) ->
+  # Save original process.argv and parse with test arguments
+  originalArgv = process.argv
+
+  # replace the args with our test args
+  process.argv = ['node', 'test'].concat(testArgv)
+
+  # Reset opts internal state by requiring a fresh instance
+  delete require.cache[require.resolve('opts')]
+
+  try
+    result = parseArgsAndCreateServer(false) # false = don't listen, for testing
+    return result
+  finally
+    # Always restore original process.argv
+    process.argv = originalArgv
 
 module.exports =
   run: runner
+  createServerFromArgs: createServerFromArgs
